@@ -69,7 +69,7 @@ function Room() {
     setRunning(true);
     setResult(null);
     try {
-      const r = await runFn({ data: { languageId: lang.judge0Id, source: code, stdin } });
+      const r = await runFn({ data: { language: lang.name, source: code, stdin } });
       setResult(r);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Run failed");
