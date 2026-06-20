@@ -1,10 +1,21 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import ReactMarkdown from "react-markdown";
 import janewayImg from "@/assets/janeway.jpg";
 import { Button } from "@/components/ui/button";
-import { Send, X, MessageCircle, Loader2, RotateCcw } from "lucide-react";
+import {
+  Send,
+  X,
+  MessageCircle,
+  Loader2,
+  RotateCcw,
+  Mic,
+  Square,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
+import { toast } from "sonner";
 
 type Props = {
   storageKey: string;
@@ -25,12 +36,53 @@ function loadMessages(key: string): UIMessage[] {
   }
 }
 
+function toSpeakable(md: string): string {
+  return md
+    .replace(/```[\s\S]*?```/g, " (code shown on screen) ")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^[#>\-*+]\s+/gm, "")
+    .replace(/(\*\*|__|\*|_)/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildContextMessage(
+  userText: string,
+  language: string,
+  code: string,
+  run: { stdout: string; stderr: string; code: number | null } | null,
+): string {
+  return [
+    `[Editor context — language: ${language}]`,
+    "```" + language,
+    code.slice(0, 6000),
+    "```",
+    run
+      ? `\n[Last run — exit ${run.code ?? "?"}]\nstdout: ${run.stdout.slice(0, 1500) || "(empty)"}${run.stderr ? `\nstderr: ${run.stderr.slice(0, 1500)}` : ""}`
+      : "\n[No run yet]",
+    "",
+    `Cadet asks: ${userText}`,
+  ].join("\n");
+}
+
 export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [initial] = useState<UIMessage[]>(() => loadMessages(storageKey));
+  const [voiceOn, setVoiceOn] = useState(true);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const spokenIdsRef = useRef<Set<string>>(new Set());
 
   const { messages, sendMessage, status, setMessages, error } = useChat({
     id: storageKey,
@@ -59,34 +111,185 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
 
   const busy = status === "submitted" || status === "streaming";
 
-  async function send() {
+  // Don't replay history on mount
+  useEffect(() => {
+    initial.forEach((m) => {
+      if (m.role === "assistant") spokenIdsRef.current.add(m.id);
+    });
+  }, [initial]);
+
+  const stopSpeaking = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+    }
+    setSpeaking(false);
+  }, []);
+
+  const speak = useCallback(async (text: string) => {
+    if (!text.trim()) return;
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+      }
+      setSpeaking(true);
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) {
+        const msg = await res.text().catch(() => "");
+        throw new Error(msg || `TTS ${res.status}`);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => {
+        setSpeaking(false);
+        URL.revokeObjectURL(url);
+      };
+      audio.onerror = () => {
+        setSpeaking(false);
+        URL.revokeObjectURL(url);
+      };
+      await audio.play();
+    } catch (e) {
+      setSpeaking(false);
+      console.error("TTS failed", e);
+    }
+  }, []);
+
+  // Auto-speak finished assistant messages
+  useEffect(() => {
+    if (!voiceOn) return;
+    if (status === "submitted" || status === "streaming") return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (spokenIdsRef.current.has(last.id)) return;
+    const text = last.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+    if (!text) return;
+    spokenIdsRef.current.add(last.id);
+    void speak(toSpeakable(text));
+  }, [messages, status, voiceOn, speak]);
+
+  useEffect(() => {
+    if (!voiceOn) stopSpeaking();
+  }, [voiceOn, stopSpeaking]);
+
+  const sendText = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed || busy) return;
+      const ctx = buildContextMessage(trimmed, language, getCode(), getLastRun());
+      await sendMessage({ text: ctx });
+    },
+    [busy, language, getCode, getLastRun, sendMessage],
+  );
+
+  async function handleSend() {
     const text = input.trim();
-    if (!text || busy) return;
+    if (!text) return;
     setInput("");
-    const code = getCode();
-    const run = getLastRun();
-    const ctx = [
-      `[Editor context — language: ${language}]`,
-      "```" + language,
-      code.slice(0, 6000),
-      "```",
-      run
-        ? `\n[Last run — exit ${run.code ?? "?"}]\nstdout: ${run.stdout.slice(0, 1500) || "(empty)"}${run.stderr ? `\nstderr: ${run.stderr.slice(0, 1500)}` : ""}`
-        : "\n[No run yet]",
-      "",
-      `Cadet asks: ${text}`,
-    ].join("\n");
-    await sendMessage({ text: ctx });
+    await sendText(text);
   }
 
   function reset() {
+    stopSpeaking();
     setMessages([]);
+    spokenIdsRef.current.clear();
     try {
       window.localStorage.removeItem(storageKey);
     } catch {
       /* ignore */
     }
   }
+
+  // --- Mic recording ---
+  async function startRecording() {
+    if (recording || transcribing) return;
+    stopSpeaking();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const mimeType =
+        ["audio/webm", "audio/mp4"].find((t) =>
+          typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(t),
+        ) ?? "";
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      recorderRef.current = recorder;
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        chunksRef.current = [];
+        if (blob.size < 1024) {
+          toast.error("That recording was empty — try again, cadet.");
+          return;
+        }
+        setTranscribing(true);
+        try {
+          const ext =
+            ({
+              "audio/webm": "webm",
+              "audio/mp4": "mp4",
+              "audio/mpeg": "mp3",
+              "audio/wav": "wav",
+            } as Record<string, string>)[(blob.type || "").split(";")[0]] ?? "webm";
+          const fd = new FormData();
+          fd.append("file", new File([blob], `recording.${ext}`, { type: blob.type }));
+          const res = await fetch("/api/stt", { method: "POST", body: fd });
+          if (!res.ok) {
+            const msg = await res.text().catch(() => "");
+            throw new Error(msg || `STT ${res.status}`);
+          }
+          const { text } = (await res.json()) as { text?: string };
+          const transcript = (text ?? "").trim();
+          if (!transcript) {
+            toast.error("I didn't catch that, cadet.");
+            return;
+          }
+          await sendText(transcript);
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : "Transcription failed");
+        } finally {
+          setTranscribing(false);
+        }
+      };
+      recorder.start();
+      setRecording(true);
+    } catch (e) {
+      toast.error("Microphone access is required to talk to Janeway.");
+      console.error(e);
+    }
+  }
+
+  function stopRecording() {
+    if (!recording) return;
+    setRecording(false);
+    try {
+      recorderRef.current?.stop();
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // cleanup on unmount
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+      }
+    };
+  }, []);
 
   return (
     <>
@@ -106,7 +309,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
           />
           <div className="text-left">
             <div className="text-sm font-semibold">Hologram Janeway</div>
-            <div className="text-xs text-muted-foreground">Ask your captain</div>
+            <div className="text-xs text-muted-foreground">Talk to your captain</div>
           </div>
           <MessageCircle className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
         </button>
@@ -114,19 +317,31 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
 
       {open && (
         <div className="fixed bottom-6 right-6 z-50 w-[min(420px,calc(100vw-2rem))] h-[min(640px,calc(100vh-6rem))] flex flex-col rounded-xl border border-border bg-card shadow-2xl overflow-hidden">
-          <div className="flex items-center gap-3 px-4 py-3 border-b bg-gradient-to-r from-primary/10 to-transparent">
-            <img
-              src={janewayImg}
-              alt="Janeway"
-              width={1024}
-              height={1024}
-              loading="lazy"
-              className="h-10 w-10 rounded-full object-cover ring-2 ring-primary/60"
-            />
-            <div className="flex-1">
-              <div className="text-sm font-semibold">Hologram Janeway</div>
-              <div className="text-[11px] font-mono text-muted-foreground">U.S.S. Protostar · Training program</div>
+          <div className="flex items-center gap-2 px-4 py-3 border-b bg-gradient-to-r from-primary/10 to-transparent">
+            <div className="relative">
+              <img
+                src={janewayImg}
+                alt="Janeway"
+                width={1024}
+                height={1024}
+                loading="lazy"
+                className={`h-10 w-10 rounded-full object-cover ring-2 ${speaking ? "ring-primary animate-pulse" : "ring-primary/60"}`}
+              />
             </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold truncate">Hologram Janeway</div>
+              <div className="text-[11px] font-mono text-muted-foreground truncate">
+                {speaking ? "Speaking…" : recording ? "Listening…" : "U.S.S. Protostar"}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setVoiceOn((v) => !v)}
+              title={voiceOn ? "Mute voice" : "Unmute voice"}
+            >
+              {voiceOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </Button>
             <Button variant="ghost" size="icon" onClick={reset} title="New conversation">
               <RotateCcw className="h-4 w-4" />
             </Button>
@@ -140,24 +355,25 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
               <div className="text-sm text-muted-foreground space-y-2">
                 <p className="font-medium text-foreground">Welcome aboard, cadet! ☕</p>
                 <p>
-                  I'm Hologram Janeway, your training officer. Tell me what you'd like to learn in{" "}
-                  <span className="font-mono">{language}</span> and I'll walk you through it, step by step.
+                  I'm Hologram Janeway, your training officer. Type or tap the mic to talk — I'll
+                  walk you through your <span className="font-mono">{language}</span> code, step by
+                  step.
                 </p>
-                <p className="text-xs italic">I can see your code and last run output automatically.</p>
+                <p className="text-xs italic">I see your code and last run automatically.</p>
               </div>
             )}
 
             {messages.map((m) => {
-              const text = m.parts
-                .map((p) => (p.type === "text" ? p.text : ""))
-                .join("");
-              // Hide editor-context block from user view
+              const text = m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
               const visible =
                 m.role === "user"
                   ? text.replace(/^\[Editor context[\s\S]*?Cadet asks:\s*/, "").trim() || text
                   : text;
               return (
-                <div key={m.id} className={`flex gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  key={m.id}
+                  className={`flex gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                >
                   {m.role === "assistant" && (
                     <img
                       src={janewayImg}
@@ -183,8 +399,20 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
 
             {status === "submitted" && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <img src={janewayImg} alt="" width={1024} height={1024} loading="lazy" className="h-7 w-7 rounded-full object-cover" />
+                <img
+                  src={janewayImg}
+                  alt=""
+                  width={1024}
+                  height={1024}
+                  loading="lazy"
+                  className="h-7 w-7 rounded-full object-cover"
+                />
                 <Loader2 className="h-3 w-3 animate-spin" /> Consulting the bridge…
+              </div>
+            )}
+            {transcribing && (
+              <div className="text-xs text-muted-foreground flex items-center gap-2">
+                <Loader2 className="h-3 w-3 animate-spin" /> Transcribing your message…
               </div>
             )}
             {error && (
@@ -194,6 +422,21 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
 
           <div className="border-t p-3">
             <div className="flex items-end gap-2">
+              <Button
+                size="icon"
+                variant={recording ? "destructive" : "outline"}
+                onClick={recording ? stopRecording : startRecording}
+                disabled={busy || transcribing}
+                title={recording ? "Stop recording" : "Hold to talk"}
+              >
+                {recording ? (
+                  <Square className="h-4 w-4" />
+                ) : transcribing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
+              </Button>
               <textarea
                 ref={taRef}
                 value={input}
@@ -201,15 +444,19 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    void send();
+                    void handleSend();
                   }
                 }}
                 rows={2}
-                placeholder="Ask Captain Janeway… (Enter to send)"
-                className="flex-1 resize-none rounded-md bg-background border border-input p-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                disabled={busy}
+                placeholder={recording ? "Recording… click ◼ to send" : "Type or tap the mic…"}
+                className="flex-1 resize-none rounded-md bg-background border border-input p-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                disabled={busy || recording || transcribing}
               />
-              <Button size="icon" onClick={() => void send()} disabled={busy || !input.trim()}>
+              <Button
+                size="icon"
+                onClick={() => void handleSend()}
+                disabled={busy || recording || transcribing || !input.trim()}
+              >
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
