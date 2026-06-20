@@ -13,6 +13,8 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LangSlugRouteImport } from './routes/lang.$slug'
+import { Route as ApiTtsRouteImport } from './routes/api/tts'
+import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const DashboardRoute = DashboardRouteImport.update({
@@ -35,6 +37,16 @@ const LangSlugRoute = LangSlugRouteImport.update({
   path: '/lang/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSttRoute = ApiSttRouteImport.update({
+  id: '/api/stt',
+  path: '/api/stt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -46,6 +58,8 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/stt': typeof ApiSttRoute
+  '/api/tts': typeof ApiTtsRoute
   '/lang/$slug': typeof LangSlugRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +67,8 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/stt': typeof ApiSttRoute
+  '/api/tts': typeof ApiTtsRoute
   '/lang/$slug': typeof LangSlugRoute
 }
 export interface FileRoutesById {
@@ -61,14 +77,38 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/stt': typeof ApiSttRoute
+  '/api/tts': typeof ApiTtsRoute
   '/lang/$slug': typeof LangSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/api/chat' | '/lang/$slug'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/api/chat'
+    | '/api/stt'
+    | '/api/tts'
+    | '/lang/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/api/chat' | '/lang/$slug'
-  id: '__root__' | '/' | '/auth' | '/dashboard' | '/api/chat' | '/lang/$slug'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/api/chat'
+    | '/api/stt'
+    | '/api/tts'
+    | '/lang/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/api/chat'
+    | '/api/stt'
+    | '/api/tts'
+    | '/lang/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +116,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiSttRoute: typeof ApiSttRoute
+  ApiTtsRoute: typeof ApiTtsRoute
   LangSlugRoute: typeof LangSlugRoute
 }
 
@@ -109,6 +151,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stt': {
+      id: '/api/stt'
+      path: '/api/stt'
+      fullPath: '/api/stt'
+      preLoaderRoute: typeof ApiSttRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -124,6 +180,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiSttRoute: ApiSttRoute,
+  ApiTtsRoute: ApiTtsRoute,
   LangSlugRoute: LangSlugRoute,
 }
 export const routeTree = rootRouteImport
