@@ -1,8 +1,9 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
+import { useServerFn } from "@tanstack/react-start";
 import { getLang } from "@/lib/languages";
-import { runCode, type RunResult } from "@/lib/piston";
+import { runCodeFn, type RunCodeResult } from "@/lib/run-code.functions";
 import { Nav } from "@/components/Nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,8 +45,9 @@ function Room() {
   const [stdin, setStdin] = useState("");
   const [running, setRunning] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [result, setResult] = useState<RunResult | null>(null);
+  const [result, setResult] = useState<RunCodeResult | null>(null);
   const [currentId, setCurrentId] = useState<string | null>(null);
+  const runFn = useServerFn(runCodeFn);
 
   useEffect(() => {
     if (!snippetId) {
@@ -67,7 +69,7 @@ function Room() {
     setRunning(true);
     setResult(null);
     try {
-      const r = await runCode(lang, code, stdin);
+      const r = await runFn({ data: { languageId: lang.judge0Id, source: code, stdin } });
       setResult(r);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Run failed");
