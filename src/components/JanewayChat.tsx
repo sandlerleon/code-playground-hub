@@ -172,7 +172,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
                     className={
                       m.role === "user"
                         ? "max-w-[80%] rounded-2xl rounded-br-sm bg-primary text-primary-foreground px-3 py-2 text-sm whitespace-pre-wrap"
-                        : "max-w-[85%] text-sm prose prose-sm prose-invert prose-p:my-1 prose-pre:my-2 prose-pre:bg-background/60 prose-pre:border prose-pre:border-border prose-code:text-primary prose-headings:mt-2 prose-headings:mb-1 prose-ol:my-1 prose-ul:my-1 prose-li:my-0"
+                        : "max-w-[85%] text-sm leading-relaxed text-foreground [&_p]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1 [&_li]:my-0.5 [&_strong]:font-semibold [&_code]:rounded [&_code]:bg-background/60 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-primary [&_code]:text-xs [&_pre]:bg-background/60 [&_pre]:border [&_pre]:border-border [&_pre]:rounded-md [&_pre]:p-2 [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-foreground [&_h1]:text-base [&_h1]:font-semibold [&_h1]:mt-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mt-2 [&_h3]:text-sm [&_h3]:font-semibold"
                     }
                   >
                     {m.role === "assistant" ? <ReactMarkdown>{visible}</ReactMarkdown> : visible}
