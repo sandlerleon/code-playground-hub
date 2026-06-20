@@ -13,6 +13,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LangSlugRouteImport } from './routes/lang.$slug'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -34,17 +35,24 @@ const LangSlugRoute = LangSlugRouteImport.update({
   path: '/lang/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/api/chat': typeof ApiChatRoute
   '/lang/$slug': typeof LangSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/api/chat': typeof ApiChatRoute
   '/lang/$slug': typeof LangSlugRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/api/chat': typeof ApiChatRoute
   '/lang/$slug': typeof LangSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/lang/$slug'
+  fullPaths: '/' | '/auth' | '/dashboard' | '/api/chat' | '/lang/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/lang/$slug'
-  id: '__root__' | '/' | '/auth' | '/dashboard' | '/lang/$slug'
+  to: '/' | '/auth' | '/dashboard' | '/api/chat' | '/lang/$slug'
+  id: '__root__' | '/' | '/auth' | '/dashboard' | '/api/chat' | '/lang/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
+  ApiChatRoute: typeof ApiChatRoute
   LangSlugRoute: typeof LangSlugRoute
 }
 
@@ -99,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
+  ApiChatRoute: ApiChatRoute,
   LangSlugRoute: LangSlugRoute,
 }
 export const routeTree = rootRouteImport
