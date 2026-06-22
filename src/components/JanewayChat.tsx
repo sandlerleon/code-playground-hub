@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import ReactMarkdown from "react-markdown";
@@ -11,11 +11,14 @@ import {
   Loader2,
   RotateCcw,
   Mic,
-  Square,
   Volume2,
   VolumeX,
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
+import { getCurriculum } from "@/lib/curriculum";
 
 type Props = {
   storageKey: string;
@@ -75,6 +78,10 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [showToc, setShowToc] = useState(false);
+  const [openModules, setOpenModules] = useState<Record<number, boolean>>({ 0: true });
+
+  const curriculum = useMemo(() => getCurriculum(language), [language]);
 
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -83,6 +90,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
   const streamRef = useRef<MediaStream | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const spokenIdsRef = useRef<Set<string>>(new Set());
+  const replayPendingRef = useRef<string | null>(null);
 
   const { messages, sendMessage, status, setMessages, error } = useChat({
     id: storageKey,
@@ -102,7 +110,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
   // autoscroll
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, status, open]);
+  }, [messages, status, open, showToc]);
 
   // focus
   useEffect(() => {
@@ -110,13 +118,6 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
   }, [open, status]);
 
   const busy = status === "submitted" || status === "streaming";
-
-  // Don't replay history on mount
-  useEffect(() => {
-    initial.forEach((m) => {
-      if (m.role === "assistant") spokenIdsRef.current.add(m.id);
-    });
-  }, [initial]);
 
   const stopSpeaking = useCallback(() => {
     if (audioRef.current) {
@@ -126,8 +127,8 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
     setSpeaking(false);
   }, []);
 
-  const speak = useCallback(async (text: string) => {
-    if (!text.trim()) return;
+  const speak = useCallback(async (text: string): Promise<boolean> => {
+    if (!text.trim()) return false;
     try {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -156,13 +157,45 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
         URL.revokeObjectURL(url);
       };
       await audio.play();
+      return true;
     } catch (e) {
       setSpeaking(false);
-      console.error("TTS failed", e);
+      console.warn("TTS playback failed", e);
+      return false;
     }
   }, []);
 
-  // Auto-speak finished assistant messages
+  // Mark history as already-spoken, but queue the last assistant message
+  // for autoplay on page load.
+  useEffect(() => {
+    initial.forEach((m) => {
+      if (m.role === "assistant") spokenIdsRef.current.add(m.id);
+    });
+    const lastAssistant = [...initial].reverse().find((m) => m.role === "assistant");
+    if (lastAssistant) {
+      const text = lastAssistant.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
+      const spoken = toSpeakable(text);
+      if (spoken) replayPendingRef.current = spoken;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Try autoplay of the last comment on first mount; if blocked, retry on open.
+  useEffect(() => {
+    if (!voiceOn) return;
+    const pending = replayPendingRef.current;
+    if (!pending) return;
+    let cancelled = false;
+    (async () => {
+      const ok = await speak(pending);
+      if (!cancelled && ok) replayPendingRef.current = null;
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [voiceOn, open, speak]);
+
+  // Auto-speak finished assistant messages (live replies)
   useEffect(() => {
     if (!voiceOn) return;
     if (status === "submitted" || status === "streaming") return;
@@ -172,6 +205,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
     const text = last.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
     if (!text) return;
     spokenIdsRef.current.add(last.id);
+    replayPendingRef.current = null;
     void speak(toSpeakable(text));
   }, [messages, status, voiceOn, speak]);
 
@@ -200,6 +234,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
     stopSpeaking();
     setMessages([]);
     spokenIdsRef.current.clear();
+    replayPendingRef.current = null;
     try {
       window.localStorage.removeItem(storageKey);
     } catch {
@@ -207,16 +242,22 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
     }
   }
 
-  // --- Mic recording ---
-  async function startRecording() {
-    if (recording || transcribing) return;
+  async function pickLesson(prompt: string) {
+    if (!open) setOpen(true);
+    setShowToc(false);
+    await sendText(prompt);
+  }
+
+  // --- Push-to-talk recording ---
+  const startRecording = useCallback(async () => {
+    if (recording || transcribing || busy) return;
     stopSpeaking();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       const mimeType =
-        ["audio/webm", "audio/mp4"].find((t) =>
-          typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(t),
+        ["audio/webm", "audio/mp4"].find(
+          (t) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(t),
         ) ?? "";
       const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
       recorderRef.current = recorder;
@@ -230,7 +271,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
         chunksRef.current = [];
         if (blob.size < 1024) {
-          toast.error("That recording was empty — try again, cadet.");
+          toast.error("That was too short — hold the mic and speak, cadet.");
           return;
         }
         setTranscribing(true);
@@ -268,9 +309,9 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
       toast.error("Microphone access is required to talk to Janeway.");
       console.error(e);
     }
-  }
+  }, [recording, transcribing, busy, stopSpeaking, sendText]);
 
-  function stopRecording() {
+  const stopRecording = useCallback(() => {
     if (!recording) return;
     setRecording(false);
     try {
@@ -278,7 +319,36 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
     } catch {
       /* ignore */
     }
-  }
+  }, [recording]);
+
+  // Spacebar push-to-talk (when chat open and not typing)
+  useEffect(() => {
+    if (!open) return;
+    const isTyping = (t: EventTarget | null) => {
+      const el = t as HTMLElement | null;
+      if (!el) return false;
+      const tag = el.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable;
+    };
+    const down = (e: KeyboardEvent) => {
+      if (e.code !== "Space" || e.repeat) return;
+      if (isTyping(e.target)) return;
+      e.preventDefault();
+      void startRecording();
+    };
+    const up = (e: KeyboardEvent) => {
+      if (e.code !== "Space") return;
+      if (isTyping(e.target)) return;
+      e.preventDefault();
+      stopRecording();
+    };
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, [open, startRecording, stopRecording]);
 
   // cleanup on unmount
   useEffect(() => {
@@ -290,6 +360,22 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
       }
     };
   }, []);
+
+  const pttHandlers = {
+    onPointerDown: (e: React.PointerEvent) => {
+      e.preventDefault();
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+      void startRecording();
+    },
+    onPointerUp: (e: React.PointerEvent) => {
+      e.preventDefault();
+      stopRecording();
+    },
+    onPointerCancel: () => stopRecording(),
+    onPointerLeave: () => {
+      if (recording) stopRecording();
+    },
+  };
 
   return (
     <>
@@ -331,9 +417,21 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold truncate">Hologram Janeway</div>
               <div className="text-[11px] font-mono text-muted-foreground truncate">
-                {speaking ? "Speaking…" : recording ? "Listening…" : "U.S.S. Protostar"}
+                {speaking
+                  ? "Speaking…"
+                  : recording
+                    ? "Listening…"
+                    : `U.S.S. Protostar · ${language}`}
               </div>
             </div>
+            <Button
+              variant={showToc ? "secondary" : "ghost"}
+              size="icon"
+              onClick={() => setShowToc((v) => !v)}
+              title="Curriculum"
+            >
+              <BookOpen className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -350,14 +448,57 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
             </Button>
           </div>
 
+          {showToc && (
+            <div className="border-b bg-background/40 max-h-[45%] overflow-y-auto">
+              <div className="px-4 py-2 text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
+                Curriculum · {language}
+              </div>
+              <ul className="pb-2">
+                {curriculum.map((mod, i) => {
+                  const isOpen = !!openModules[i];
+                  return (
+                    <li key={mod.title} className="px-2">
+                      <button
+                        onClick={() => setOpenModules((s) => ({ ...s, [i]: !s[i] }))}
+                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent text-sm font-medium text-left"
+                      >
+                        {isOpen ? (
+                          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                        ) : (
+                          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                        <span className="flex-1 truncate">{mod.title}</span>
+                      </button>
+                      {isOpen && (
+                        <ul className="pl-7 pb-1 space-y-0.5">
+                          {mod.lessons.map((lesson) => (
+                            <li key={lesson.title}>
+                              <button
+                                onClick={() => void pickLesson(lesson.prompt)}
+                                disabled={busy}
+                                className="w-full text-left text-xs px-2 py-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground disabled:opacity-50"
+                              >
+                                › {lesson.title}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
             {messages.length === 0 && (
               <div className="text-sm text-muted-foreground space-y-2">
                 <p className="font-medium text-foreground">Welcome aboard, cadet! ☕</p>
                 <p>
-                  I'm Hologram Janeway, your training officer. Type or tap the mic to talk — I'll
-                  walk you through your <span className="font-mono">{language}</span> code, step by
-                  step.
+                  I'm Hologram Janeway, your training officer. Tap the{" "}
+                  <BookOpen className="inline h-3.5 w-3.5 -mt-0.5" /> for the curriculum, type, or
+                  hold the mic (or Spacebar) to talk.
                 </p>
                 <p className="text-xs italic">I see your code and last run automatically.</p>
               </div>
@@ -425,13 +566,12 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
               <Button
                 size="icon"
                 variant={recording ? "destructive" : "outline"}
-                onClick={recording ? stopRecording : startRecording}
+                {...pttHandlers}
                 disabled={busy || transcribing}
-                title={recording ? "Stop recording" : "Hold to talk"}
+                title="Hold to talk (or hold Spacebar)"
+                className={recording ? "animate-pulse" : ""}
               >
-                {recording ? (
-                  <Square className="h-4 w-4" />
-                ) : transcribing ? (
+                {transcribing ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Mic className="h-4 w-4" />
@@ -448,7 +588,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
                   }
                 }}
                 rows={2}
-                placeholder={recording ? "Recording… click ◼ to send" : "Type or tap the mic…"}
+                placeholder={recording ? "Recording… release to send" : "Type, or hold mic / space to talk…"}
                 className="flex-1 resize-none rounded-md bg-background border border-input p-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
                 disabled={busy || recording || transcribing}
               />
