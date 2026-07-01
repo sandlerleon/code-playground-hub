@@ -158,41 +158,44 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
     setSpeaking(false);
   }, []);
 
-  const speak = useCallback(async (text: string) => {
-    if (!text.trim()) return;
-    try {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-      }
-      setSpeaking(true);
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      if (!res.ok) {
-        const msg = await res.text().catch(() => "");
-        throw new Error(msg || `TTS ${res.status}`);
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.onended = () => {
+  const speak = useCallback(
+    async (text: string, langOverride?: string) => {
+      if (!text.trim()) return;
+      try {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.src = "";
+        }
+        setSpeaking(true);
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, language: langOverride ?? spokenLang }),
+        });
+        if (!res.ok) {
+          const msg = await res.text().catch(() => "");
+          throw new Error(msg || `TTS ${res.status}`);
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => {
+          setSpeaking(false);
+          URL.revokeObjectURL(url);
+        };
+        audio.onerror = () => {
+          setSpeaking(false);
+          URL.revokeObjectURL(url);
+        };
+        await audio.play();
+      } catch (e) {
         setSpeaking(false);
-        URL.revokeObjectURL(url);
-      };
-      audio.onerror = () => {
-        setSpeaking(false);
-        URL.revokeObjectURL(url);
-      };
-      await audio.play();
-    } catch (e) {
-      setSpeaking(false);
-      console.error("TTS failed", e);
-    }
-  }, []);
+        console.error("TTS failed", e);
+      }
+    },
+    [spokenLang],
+  );
 
   // Auto-speak finished assistant messages
   useEffect(() => {
@@ -207,6 +210,42 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
     void speak(toSpeakable(text));
   }, [messages, status, voiceOn, speak]);
 
+  // Persist spoken language
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("janeway-spoken-lang", spokenLang);
+    } catch {
+      /* ignore */
+    }
+  }, [spokenLang]);
+
+  // Autoplay greeting on first mount (once per language slot)
+  const greetedRef = useRef(false);
+  useEffect(() => {
+    if (greetedRef.current) return;
+    if (messages.length > 0) {
+      greetedRef.current = true;
+      return;
+    }
+    greetedRef.current = true;
+    const preset = SPOKEN_LANGUAGES.find((l) => l.code === spokenLang);
+    const greeting =
+      (preset?.nativeGreeting ?? "Welcome aboard, cadet! Ready to write some code?") +
+      ` (Coding in ${language} today.)`;
+    const msg: UIMessage = {
+      id: crypto.randomUUID(),
+      role: "assistant",
+      parts: [{ type: "text", text: greeting }],
+    };
+    setMessages([msg]);
+    // speak immediately (may be blocked by autoplay policy — user can click volume to retry)
+    if (voiceOn) {
+      spokenIdsRef.current.add(msg.id);
+      void speak(toSpeakable(greeting));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (!voiceOn) stopSpeaking();
   }, [voiceOn, stopSpeaking]);
@@ -215,10 +254,10 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed || busy) return;
-      const ctx = buildContextMessage(trimmed, language, getCode(), getLastRun());
+      const ctx = buildContextMessage(trimmed, language, getCode(), getLastRun(), spokenLang);
       await sendMessage({ text: ctx });
     },
-    [busy, language, getCode, getLastRun, sendMessage],
+    [busy, language, getCode, getLastRun, sendMessage, spokenLang],
   );
 
   async function handleSend() {
