@@ -6,6 +6,8 @@ import { getLang } from "@/lib/languages";
 import { runCodeFn, type RunCodeResult } from "@/lib/run-code.functions";
 import { Nav } from "@/components/Nav";
 import { JanewayChat } from "@/components/JanewayChat";
+import { CourseSheet } from "@/components/CourseSheet";
+import { PeerChat } from "@/components/PeerChat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -15,6 +17,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { useSearch, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
+import type { Chapter } from "@/lib/curriculum";
 
 const searchSchema = z.object({ snippet: z.string().optional() });
 
@@ -114,6 +117,17 @@ function Room() {
       <div className="border-b bg-card/40">
         <div className="mx-auto max-w-7xl flex items-center gap-4 px-6 py-3">
           <Link to="/" className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /></Link>
+          <CourseSheet
+            slug={lang.slug}
+            hello={lang.hello}
+            onOpenChapter={(ch: Chapter) => {
+              setCode(ch.starter);
+              setTitle(`Ch ${ch.n}: ${ch.title}`);
+              setCurrentId(null);
+              setResult(null);
+              toast.success(`Chapter ${ch.n}: ${ch.title}`);
+            }}
+          />
           <div className={`flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br ${lang.accent} font-mono text-xs font-bold text-black/80`}>{lang.icon}</div>
           <div className="flex-1">
             <Input value={title} onChange={e=>setTitle(e.target.value)} className="h-8 max-w-xs border-transparent bg-transparent text-base font-semibold focus-visible:border-input" />
@@ -177,6 +191,7 @@ function Room() {
         getCode={() => code}
         getLastRun={() => (result ? { stdout: result.stdout, stderr: result.stderr, code: result.code } : null)}
       />
+      <PeerChat room={lang.slug} displayName={user?.email ?? undefined} />
     </div>
   );
 }
