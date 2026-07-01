@@ -16,6 +16,26 @@ import {
   VolumeX,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+export const SPOKEN_LANGUAGES: { code: string; label: string; nativeGreeting: string }[] = [
+  { code: "English", label: "English", nativeGreeting: "Welcome aboard, cadet! Ready to write some code?" },
+  { code: "Mandarin Chinese", label: "中文 (普通话)", nativeGreeting: "欢迎登舰，学员！准备好一起写代码了吗？" },
+  { code: "Spanish", label: "Español", nativeGreeting: "¡Bienvenido a bordo, cadete! ¿Listo para programar?" },
+  { code: "Hindi", label: "हिन्दी", nativeGreeting: "स्वागत है कैडेट! क्या आप कोड लिखने के लिए तैयार हैं?" },
+  { code: "Arabic", label: "العربية", nativeGreeting: "أهلاً بك على متن السفينة يا مبتدئ! هل أنت مستعد للبرمجة؟" },
+  { code: "Portuguese", label: "Português", nativeGreeting: "Bem-vindo a bordo, cadete! Pronto para programar?" },
+  { code: "Bengali", label: "বাংলা", nativeGreeting: "স্বাগতম ক্যাডেট! কোড লিখতে প্রস্তুত?" },
+  { code: "Russian", label: "Русский", nativeGreeting: "Добро пожаловать на борт, кадет! Готовы писать код?" },
+  { code: "Japanese", label: "日本語", nativeGreeting: "ようこそ、候補生！コードを書く準備はいい？" },
+  { code: "French", label: "Français", nativeGreeting: "Bienvenue à bord, cadet ! Prêt à coder ?" },
+];
 
 type Props = {
   storageKey: string;
