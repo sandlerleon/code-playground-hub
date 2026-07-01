@@ -73,8 +73,14 @@ function buildContextMessage(
   language: string,
   code: string,
   run: { stdout: string; stderr: string; code: number | null } | null,
+  spokenLanguage: string,
 ): string {
+  const langLine =
+    spokenLanguage && spokenLanguage !== "English"
+      ? `[Reply entirely in ${spokenLanguage}. Keep code identifiers in their original programming language.]`
+      : "";
   return [
+    langLine,
     `[Editor context — language: ${language}]`,
     "```" + language,
     code.slice(0, 6000),
@@ -84,7 +90,9 @@ function buildContextMessage(
       : "\n[No run yet]",
     "",
     `Cadet asks: ${userText}`,
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props) {
@@ -95,6 +103,10 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [spokenLang, setSpokenLang] = useState<string>(() => {
+    if (typeof window === "undefined") return "English";
+    return window.localStorage.getItem("janeway-spoken-lang") ?? "English";
+  });
 
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
