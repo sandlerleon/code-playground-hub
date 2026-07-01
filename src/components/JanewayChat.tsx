@@ -405,6 +405,18 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
                 {speaking ? "Speaking…" : recording ? "Listening…" : "U.S.S. Protostar"}
               </div>
             </div>
+            <Select value={spokenLang} onValueChange={setSpokenLang}>
+              <SelectTrigger className="h-8 w-[110px] text-xs" title="Janeway's spoken language">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                {SPOKEN_LANGUAGES.map((l) => (
+                  <SelectItem key={l.code} value={l.code} className="text-xs">
+                    {l.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               variant="ghost"
               size="icon"
