@@ -3,11 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Users, X, Send } from "lucide-react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 type Msg = { id: string; from: string; text: string; ts: number };
 
 type Props = {
-  room: string; // default room = language slug
+  room: string;
   displayName?: string;
 };
 
@@ -26,74 +27,22 @@ export function PeerChat({ room: initialRoom, displayName }: Props) {
   const [peers, setPeers] = useState<string[]>([]);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const chanRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
-    window.localStorage.setItem("peer-name", name);
+    if (typeof window !== "undefined") window.localStorage.setItem("peer-name", name);
   }, [name]);
 
   const channelName = useMemo(() => `peerchat:${room}`, [room]);
 
   useEffect(() => {
     if (!open) return;
-    const channel = supabase.channel(channelName, {
-      config: { presence: { key: name }, broadcast: { self: false } },
-    });
-
-    channel
-      .on("broadcast", { event: "msg" }, ({ payload }) => {
-        setMessages((prev) => [...prev, payload as Msg]);
-      })
-      .on("presence", { event: "sync" }, () => {
-        const state = channel.presenceState();
-        setPeers(Object.keys(state));
-      })
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
-          await channel.track({ name, joined: Date.now() });
-        }
-      });
-
-    return () => {
-      supabase.removeChannel(channel);
-      setPeers([]);
-    };
-  }, [channelName, name, open]);
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, open]);
-
-  async function send() {
-    const text = input.trim();
-    if (!text) return;
-    const msg: Msg = {
-      id: crypto.randomUUID(),
-      from: name,
-      text,
-      ts: Date.now(),
-    };
-    setInput("");
-    setMessages((prev) => [...prev, msg]);
-    await supabase.channel(channelName).send({
-      type: "broadcast",
-      event: "msg",
-      payload: msg,
-    });
-    // The above ad-hoc channel doesn't guarantee subscription; use the subscribed one via singleton
-    // Simpler: re-fetch stored channel via supabase.getChannels()
-  }
-
-  // Better: keep a ref to the subscribed channel
-  const chanRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  useEffect(() => {
-    if (!open) return;
     const c = supabase.channel(channelName, {
       config: { presence: { key: name }, broadcast: { self: false } },
     });
     c.on("broadcast", { event: "msg" }, ({ payload }) => {
-      setMessages((prev) =>
-        prev.some((m) => m.id === (payload as Msg).id) ? prev : [...prev, payload as Msg],
-      );
+      const m = payload as Msg;
+      setMessages((prev) => (prev.some((p) => p.id === m.id) ? prev : [...prev, m]));
     })
       .on("presence", { event: "sync" }, () => {
         setPeers(Object.keys(c.presenceState()));
@@ -105,10 +54,15 @@ export function PeerChat({ room: initialRoom, displayName }: Props) {
     return () => {
       supabase.removeChannel(c);
       chanRef.current = null;
+      setPeers([]);
     };
   }, [channelName, name, open]);
 
-  async function sendReal() {
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, open]);
+
+  async function send() {
     const text = input.trim();
     if (!text || !chanRef.current) return;
     const msg: Msg = { id: crypto.randomUUID(), from: name, text, ts: Date.now() };
@@ -187,13 +141,13 @@ export function PeerChat({ room: initialRoom, displayName }: Props) {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  void sendReal();
+                  void send();
                 }
               }}
               placeholder={`Message as ${name}…`}
               className="h-9"
             />
-            <Button size="icon" onClick={() => void sendReal()} disabled={!input.trim()}>
+            <Button size="icon" onClick={() => void send()} disabled={!input.trim()}>
               <Send className="h-4 w-4" />
             </Button>
           </div>
