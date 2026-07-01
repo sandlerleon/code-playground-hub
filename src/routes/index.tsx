@@ -27,8 +27,8 @@ function Lobby() {
               <Sparkles className="h-3 w-3" /> 10 languages · live execution · save & share
             </div>
             <h1 className="mt-6 font-display text-5xl sm:text-6xl font-bold tracking-tight">
-              Train your code.<br />
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">In any language.</span>
+              Train you to code.<br />
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">In any language with AI Teacher.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
               Pick a room, write code in a real editor, hit Run. Each language has its own runtime — no install, no setup.

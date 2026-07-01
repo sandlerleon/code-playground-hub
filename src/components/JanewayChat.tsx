@@ -16,6 +16,26 @@ import {
   VolumeX,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+export const SPOKEN_LANGUAGES: { code: string; label: string; nativeGreeting: string }[] = [
+  { code: "English", label: "English", nativeGreeting: "Welcome aboard, cadet! Ready to write some code?" },
+  { code: "Mandarin Chinese", label: "中文 (普通话)", nativeGreeting: "欢迎登舰，学员！准备好一起写代码了吗？" },
+  { code: "Spanish", label: "Español", nativeGreeting: "¡Bienvenido a bordo, cadete! ¿Listo para programar?" },
+  { code: "Hindi", label: "हिन्दी", nativeGreeting: "स्वागत है कैडेट! क्या आप कोड लिखने के लिए तैयार हैं?" },
+  { code: "Arabic", label: "العربية", nativeGreeting: "أهلاً بك على متن السفينة يا مبتدئ! هل أنت مستعد للبرمجة؟" },
+  { code: "Portuguese", label: "Português", nativeGreeting: "Bem-vindo a bordo, cadete! Pronto para programar?" },
+  { code: "Bengali", label: "বাংলা", nativeGreeting: "স্বাগতম ক্যাডেট! কোড লিখতে প্রস্তুত?" },
+  { code: "Russian", label: "Русский", nativeGreeting: "Добро пожаловать на борт, кадет! Готовы писать код?" },
+  { code: "Japanese", label: "日本語", nativeGreeting: "ようこそ、候補生！コードを書く準備はいい？" },
+  { code: "French", label: "Français", nativeGreeting: "Bienvenue à bord, cadet ! Prêt à coder ?" },
+];
 
 type Props = {
   storageKey: string;
@@ -53,8 +73,14 @@ function buildContextMessage(
   language: string,
   code: string,
   run: { stdout: string; stderr: string; code: number | null } | null,
+  spokenLanguage: string,
 ): string {
+  const langLine =
+    spokenLanguage && spokenLanguage !== "English"
+      ? `[Reply entirely in ${spokenLanguage}. Keep code identifiers in their original programming language.]`
+      : "";
   return [
+    langLine,
     `[Editor context — language: ${language}]`,
     "```" + language,
     code.slice(0, 6000),
@@ -64,7 +90,9 @@ function buildContextMessage(
       : "\n[No run yet]",
     "",
     `Cadet asks: ${userText}`,
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props) {
@@ -75,6 +103,10 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [spokenLang, setSpokenLang] = useState<string>(() => {
+    if (typeof window === "undefined") return "English";
+    return window.localStorage.getItem("janeway-spoken-lang") ?? "English";
+  });
 
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -126,41 +158,44 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
     setSpeaking(false);
   }, []);
 
-  const speak = useCallback(async (text: string) => {
-    if (!text.trim()) return;
-    try {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-      }
-      setSpeaking(true);
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      if (!res.ok) {
-        const msg = await res.text().catch(() => "");
-        throw new Error(msg || `TTS ${res.status}`);
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.onended = () => {
+  const speak = useCallback(
+    async (text: string, langOverride?: string) => {
+      if (!text.trim()) return;
+      try {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.src = "";
+        }
+        setSpeaking(true);
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, language: langOverride ?? spokenLang }),
+        });
+        if (!res.ok) {
+          const msg = await res.text().catch(() => "");
+          throw new Error(msg || `TTS ${res.status}`);
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => {
+          setSpeaking(false);
+          URL.revokeObjectURL(url);
+        };
+        audio.onerror = () => {
+          setSpeaking(false);
+          URL.revokeObjectURL(url);
+        };
+        await audio.play();
+      } catch (e) {
         setSpeaking(false);
-        URL.revokeObjectURL(url);
-      };
-      audio.onerror = () => {
-        setSpeaking(false);
-        URL.revokeObjectURL(url);
-      };
-      await audio.play();
-    } catch (e) {
-      setSpeaking(false);
-      console.error("TTS failed", e);
-    }
-  }, []);
+        console.error("TTS failed", e);
+      }
+    },
+    [spokenLang],
+  );
 
   // Auto-speak finished assistant messages
   useEffect(() => {
@@ -175,6 +210,42 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
     void speak(toSpeakable(text));
   }, [messages, status, voiceOn, speak]);
 
+  // Persist spoken language
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("janeway-spoken-lang", spokenLang);
+    } catch {
+      /* ignore */
+    }
+  }, [spokenLang]);
+
+  // Autoplay greeting on first mount (once per language slot)
+  const greetedRef = useRef(false);
+  useEffect(() => {
+    if (greetedRef.current) return;
+    if (messages.length > 0) {
+      greetedRef.current = true;
+      return;
+    }
+    greetedRef.current = true;
+    const preset = SPOKEN_LANGUAGES.find((l) => l.code === spokenLang);
+    const greeting =
+      (preset?.nativeGreeting ?? "Welcome aboard, cadet! Ready to write some code?") +
+      ` (Coding in ${language} today.)`;
+    const msg: UIMessage = {
+      id: crypto.randomUUID(),
+      role: "assistant",
+      parts: [{ type: "text", text: greeting }],
+    };
+    setMessages([msg]);
+    // speak immediately (may be blocked by autoplay policy — user can click volume to retry)
+    if (voiceOn) {
+      spokenIdsRef.current.add(msg.id);
+      void speak(toSpeakable(greeting));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (!voiceOn) stopSpeaking();
   }, [voiceOn, stopSpeaking]);
@@ -183,10 +254,10 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed || busy) return;
-      const ctx = buildContextMessage(trimmed, language, getCode(), getLastRun());
+      const ctx = buildContextMessage(trimmed, language, getCode(), getLastRun(), spokenLang);
       await sendMessage({ text: ctx });
     },
-    [busy, language, getCode, getLastRun, sendMessage],
+    [busy, language, getCode, getLastRun, sendMessage, spokenLang],
   );
 
   async function handleSend() {
@@ -334,6 +405,18 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
                 {speaking ? "Speaking…" : recording ? "Listening…" : "U.S.S. Protostar"}
               </div>
             </div>
+            <Select value={spokenLang} onValueChange={setSpokenLang}>
+              <SelectTrigger className="h-8 w-[110px] text-xs" title="Janeway's spoken language">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                {SPOKEN_LANGUAGES.map((l) => (
+                  <SelectItem key={l.code} value={l.code} className="text-xs">
+                    {l.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               variant="ghost"
               size="icon"
