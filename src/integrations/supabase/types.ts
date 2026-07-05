@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_rooms: {
+        Row: {
+          chapter: number | null
+          created_at: string
+          creator_id: string | null
+          id: string
+          language: string
+          mode: string
+          name: string
+        }
+        Insert: {
+          chapter?: number | null
+          created_at?: string
+          creator_id?: string | null
+          id?: string
+          language: string
+          mode?: string
+          name: string
+        }
+        Update: {
+          chapter?: number | null
+          created_at?: string
+          creator_id?: string | null
+          id?: string
+          language?: string
+          mode?: string
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -37,6 +67,44 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      room_messages: {
+        Row: {
+          author_name: string
+          created_at: string
+          id: string
+          role: string
+          room_id: string
+          text: string
+          user_id: string | null
+        }
+        Insert: {
+          author_name: string
+          created_at?: string
+          id?: string
+          role?: string
+          room_id: string
+          text: string
+          user_id?: string | null
+        }
+        Update: {
+          author_name?: string
+          created_at?: string
+          id?: string
+          role?: string
+          room_id?: string
+          text?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       snippets: {
         Row: {

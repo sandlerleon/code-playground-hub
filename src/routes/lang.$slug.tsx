@@ -7,7 +7,8 @@ import { runCodeFn, type RunCodeResult } from "@/lib/run-code.functions";
 import { Nav } from "@/components/Nav";
 import { JanewayChat } from "@/components/JanewayChat";
 import { CourseSheet } from "@/components/CourseSheet";
-import { PeerChat } from "@/components/PeerChat";
+import { RoomsPanel } from "@/components/RoomsPanel";
+import { MusicPlayer } from "@/components/MusicPlayer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -133,6 +134,7 @@ function Room() {
             <Input value={title} onChange={e=>setTitle(e.target.value)} className="h-8 max-w-xs border-transparent bg-transparent text-base font-semibold focus-visible:border-input" />
             <div className="text-xs text-muted-foreground font-mono">{lang.name} · {lang.piston.version}</div>
           </div>
+          <MusicPlayer />
           <Button variant="outline" size="sm" onClick={save} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} <span className="ml-2">Save</span>
           </Button>
@@ -191,7 +193,7 @@ function Room() {
         getCode={() => code}
         getLastRun={() => (result ? { stdout: result.stdout, stderr: result.stderr, code: result.code } : null)}
       />
-      <PeerChat room={lang.slug} displayName={user?.email ?? undefined} />
+      <RoomsPanel language={lang.slug} />
     </div>
   );
 }
