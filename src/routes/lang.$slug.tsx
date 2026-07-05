@@ -193,7 +193,7 @@ function Room() {
         getCode={() => code}
         getLastRun={() => (result ? { stdout: result.stdout, stderr: result.stderr, code: result.code } : null)}
       />
-      <PeerChat room={lang.slug} displayName={user?.email ?? undefined} />
+      <RoomsPanel language={lang.slug} />
     </div>
   );
 }
