@@ -48,6 +48,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          full_name: string | null
           id: string
           updated_at: string
           username: string | null
@@ -55,6 +56,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          full_name?: string | null
           id: string
           updated_at?: string
           username?: string | null
@@ -62,9 +64,43 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          full_name?: string | null
           id?: string
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      quiz_attempts: {
+        Row: {
+          chapter: number
+          created_at: string
+          id: string
+          language: string
+          percent: number
+          score: number
+          total: number
+          user_id: string
+        }
+        Insert: {
+          chapter: number
+          created_at?: string
+          id?: string
+          language: string
+          percent: number
+          score: number
+          total: number
+          user_id: string
+        }
+        Update: {
+          chapter?: number
+          created_at?: string
+          id?: string
+          language?: string
+          percent?: number
+          score?: number
+          total?: number
+          user_id?: string
         }
         Relationships: []
       }
