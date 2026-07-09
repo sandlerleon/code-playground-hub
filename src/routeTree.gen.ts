@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LeaderboardSlugRouteImport } from './routes/leaderboard.$slug'
 import { Route as LangSlugRouteImport } from './routes/lang.$slug'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
@@ -30,6 +31,11 @@ const AuthRoute = AuthRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardSlugRoute = LeaderboardSlugRouteImport.update({
+  id: '/leaderboard/$slug',
+  path: '/leaderboard/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LangSlugRoute = LangSlugRouteImport.update({
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/lang/$slug': typeof LangSlugRoute
+  '/leaderboard/$slug': typeof LeaderboardSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/lang/$slug': typeof LangSlugRoute
+  '/leaderboard/$slug': typeof LeaderboardSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/api/stt': typeof ApiSttRoute
   '/api/tts': typeof ApiTtsRoute
   '/lang/$slug': typeof LangSlugRoute
+  '/leaderboard/$slug': typeof LeaderboardSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/lang/$slug'
+    | '/leaderboard/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/lang/$slug'
+    | '/leaderboard/$slug'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/tts'
     | '/lang/$slug'
+    | '/leaderboard/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   ApiSttRoute: typeof ApiSttRoute
   ApiTtsRoute: typeof ApiTtsRoute
   LangSlugRoute: typeof LangSlugRoute
+  LeaderboardSlugRoute: typeof LeaderboardSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -142,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard/$slug': {
+      id: '/leaderboard/$slug'
+      path: '/leaderboard/$slug'
+      fullPath: '/leaderboard/$slug'
+      preLoaderRoute: typeof LeaderboardSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lang/$slug': {
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSttRoute: ApiSttRoute,
   ApiTtsRoute: ApiTtsRoute,
   LangSlugRoute: LangSlugRoute,
+  LeaderboardSlugRoute: LeaderboardSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
