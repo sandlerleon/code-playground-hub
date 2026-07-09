@@ -50,23 +50,29 @@ function Lobby() {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {LANGUAGES.map((lang) => (
-            <Link
+            <div
               key={lang.slug}
-              to="/lang/$slug"
-              params={{ slug: lang.slug }}
               className="group relative overflow-hidden rounded-xl border bg-card p-5 transition hover:border-primary/50 hover:glow-primary"
             >
               <div className={`absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br ${lang.accent} opacity-20 blur-2xl transition group-hover:opacity-40`} />
-              <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${lang.accent} font-mono text-sm font-bold text-black/80`}>
-                {lang.icon}
+              <Link to="/lang/$slug" params={{ slug: lang.slug }} className="block">
+                <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${lang.accent} font-mono text-sm font-bold text-black/80`}>
+                  {lang.icon}
+                </div>
+                <h3 className="mt-4 text-lg font-semibold">{lang.name}</h3>
+                <p className="mt-1 text-xs text-muted-foreground font-mono">{lang.piston.language} {lang.piston.version}</p>
+              </Link>
+              <div className="mt-4 flex items-center justify-between text-sm">
+                <Link to="/lang/$slug" params={{ slug: lang.slug }} className="text-primary inline-flex items-center">
+                  Enter room <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+                <Link to="/leaderboard/$slug" params={{ slug: lang.slug }} className="text-xs text-muted-foreground hover:text-primary">
+                  🏆 Leaderboard
+                </Link>
               </div>
-              <h3 className="mt-4 text-lg font-semibold">{lang.name}</h3>
-              <p className="mt-1 text-xs text-muted-foreground font-mono">{lang.piston.language} {lang.piston.version}</p>
-              <div className="mt-4 flex items-center text-sm text-primary opacity-0 transition group-hover:opacity-100">
-                Enter room <ArrowRight className="ml-1 h-4 w-4" />
-              </div>
-            </Link>
+            </div>
           ))}
+
         </div>
       </section>
 
