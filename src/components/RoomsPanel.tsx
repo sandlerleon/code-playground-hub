@@ -10,25 +10,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Users, X, Plus, Hash, Trash2 } from "lucide-react";
+import { Users, X, Plus, Hash, Trash2, Filter } from "lucide-react";
 import { RoomView, type Room } from "./RoomView";
 import { toast } from "sonner";
 
 type Props = {
   language: string;
+  open?: boolean;
+  onOpenChange?: (o: boolean) => void;
+  /** When set (and changes), open panel, filter to chapter and preselect it in the create form. */
+  focusChapter?: number | null;
+  /** Bumped by parent to re-trigger focus even if focusChapter value is unchanged. */
+  focusToken?: number;
 };
 
-export function RoomsPanel({ language }: Props) {
-  const [open, setOpen] = useState(false);
+export function RoomsPanel({ language, open: openProp, onOpenChange, focusChapter, focusToken }: Props) {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = (o: boolean) => {
+    if (onOpenChange) onOpenChange(o);
+    else setOpenState(o);
+  };
+
   const [rooms, setRooms] = useState<Room[]>([]);
   const [active, setActive] = useState<Room | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [filterChapter, setFilterChapter] = useState<number | null>(null);
   const { user } = useAuth();
 
   // form state
   const [name, setName] = useState("");
   const [chapter, setChapter] = useState<string>("");
   const [mode, setMode] = useState<"active" | "passive">("active");
+
+  // React to parent focus requests
+  useEffect(() => {
+    if (focusChapter == null) return;
+    setOpen(true);
+    setActive(null);
+    setFilterChapter(focusChapter);
+    setChapter(String(focusChapter));
+    setShowCreate(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusChapter, focusToken]);
 
   useEffect(() => {
     if (!open) return;
@@ -87,7 +111,6 @@ export function RoomsPanel({ language }: Props) {
     if (error) return toast.error(error.message);
     setShowCreate(false);
     setName("");
-    setChapter("");
     setActive(data as Room);
   }
 
@@ -97,6 +120,10 @@ export function RoomsPanel({ language }: Props) {
     const { error } = await supabase.from("chat_rooms").delete().eq("id", r.id);
     if (error) toast.error(error.message);
   }
+
+  const visibleRooms = filterChapter == null
+    ? rooms
+    : rooms.filter((r) => r.chapter === filterChapter);
 
   return (
     <>
@@ -135,6 +162,32 @@ export function RoomsPanel({ language }: Props) {
                 <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
                   <X className="h-4 w-4" />
                 </Button>
+              </div>
+
+              {/* Chapter filter bar */}
+              <div className="flex items-center gap-2 border-b bg-background/40 px-3 py-1.5 text-[11px]">
+                <Filter className="h-3 w-3 text-muted-foreground" />
+                <span className="text-muted-foreground">Filter:</span>
+                <button
+                  onClick={() => setFilterChapter(null)}
+                  className={`px-2 py-0.5 rounded border ${filterChapter == null ? "border-primary text-primary" : "border-border text-muted-foreground"}`}
+                >
+                  All
+                </button>
+                {filterChapter != null && (
+                  <span className="px-2 py-0.5 rounded border border-primary text-primary">
+                    Ch {filterChapter}
+                  </span>
+                )}
+                <Input
+                  placeholder="ch #"
+                  value={filterChapter ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "");
+                    setFilterChapter(v ? Number(v) : null);
+                  }}
+                  className="h-6 w-14 text-[11px] ml-auto"
+                />
               </div>
 
               {showCreate && (
@@ -181,13 +234,15 @@ export function RoomsPanel({ language }: Props) {
               )}
 
               <div className="flex-1 overflow-y-auto">
-                {rooms.length === 0 ? (
+                {visibleRooms.length === 0 ? (
                   <div className="p-4 text-xs text-muted-foreground">
-                    No rooms yet. Create one to start collaborating on a chapter.
+                    {filterChapter != null
+                      ? `No rooms yet for chapter ${filterChapter}. Create the first one!`
+                      : "No rooms yet. Create one to start collaborating on a chapter."}
                   </div>
                 ) : (
                   <ul className="divide-y divide-border">
-                    {rooms.map((r) => (
+                    {visibleRooms.map((r) => (
                       <li
                         key={r.id}
                         className="flex items-center gap-2 px-3 py-2 hover:bg-accent/40"
