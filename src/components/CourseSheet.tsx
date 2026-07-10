@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Check, Circle, Dot, Award } from "lucide-react";
+import { BookOpen, Check, Circle, Dot, Award, Users, Youtube } from "lucide-react";
 import {
   buildCurriculum,
   loadProgress,
@@ -13,19 +13,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toLetterGrade, gradeColor } from "@/lib/grade";
 import { QuizDialog } from "@/components/QuizDialog";
+import { TuteDialog } from "@/components/TuteDialog";
 
 type Props = {
   slug: string;
   hello: string;
   onOpenChapter: (ch: Chapter) => void;
+  onOpenRooms?: (chapter: number) => void;
 };
 
-export function CourseSheet({ slug, hello, onOpenChapter }: Props) {
+export function CourseSheet({ slug, hello, onOpenChapter, onOpenRooms }: Props) {
   const chapters = buildCurriculum(slug, hello);
   const { user } = useAuth();
   const [progress, setProgress] = useState<ProgressMap>({});
   const [best, setBest] = useState<Record<number, number>>({});
   const [quiz, setQuiz] = useState<Chapter | null>(null);
+  const [tute, setTute] = useState<Chapter | null>(null);
 
   useEffect(() => {
     setProgress(loadProgress(slug));
@@ -71,7 +74,7 @@ export function CourseSheet({ slug, hello, onOpenChapter }: Props) {
             <span className="ml-2 text-xs text-muted-foreground">{completed}/20</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[400px] sm:w-[440px] overflow-y-auto">
+        <SheetContent side="left" className="w-[400px] sm:w-[460px] overflow-y-auto">
           <SheetHeader>
             <SheetTitle className="capitalize">{slug} — 20 Chapters</SheetTitle>
             <p className="text-xs text-muted-foreground">
@@ -79,6 +82,12 @@ export function CourseSheet({ slug, hello, onOpenChapter }: Props) {
               <span className="inline-flex items-center gap-1 ml-2"><Circle className="h-3 w-3 text-amber-400 fill-amber-400" /> viewed</span>{" "}
               <span className="inline-flex items-center gap-1 ml-2"><Check className="h-3 w-3 text-emerald-400" /> completed</span>
             </p>
+            <button
+              onClick={() => setTute({ id: "lang", n: 0, title: "", objective: "", starter: "" })}
+              className="mt-2 inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 self-start"
+            >
+              <Youtube className="h-3 w-3" /> Language tute (full course)
+            </button>
           </SheetHeader>
 
           <ol className="mt-4 space-y-1">
@@ -114,7 +123,7 @@ export function CourseSheet({ slug, hello, onOpenChapter }: Props) {
                       </span>
                     )}
                   </button>
-                  <div className="px-3 pb-2 flex gap-2 items-center">
+                  <div className="px-3 pb-2 flex flex-wrap gap-2 items-center">
                     <button
                       onClick={() => setStatus(ch.id, st === "completed" ? "viewed" : "completed")}
                       className="text-[11px] px-2 py-0.5 rounded border border-border text-muted-foreground hover:text-foreground hover:border-emerald-500/60"
@@ -128,6 +137,20 @@ export function CourseSheet({ slug, hello, onOpenChapter }: Props) {
                       <Award className="h-3 w-3" />
                       {bestPct != null ? `Retake (best ${bestPct}%)` : "Take quiz"}
                     </button>
+                    <button
+                      onClick={() => setTute(ch)}
+                      className="text-[11px] px-2 py-0.5 rounded border border-red-500/40 text-red-400 hover:bg-red-500/10 inline-flex items-center gap-1"
+                    >
+                      <Youtube className="h-3 w-3" /> Tute
+                    </button>
+                    {onOpenRooms && (
+                      <button
+                        onClick={() => onOpenRooms(ch.n)}
+                        className="text-[11px] px-2 py-0.5 rounded border border-sky-500/40 text-sky-400 hover:bg-sky-500/10 inline-flex items-center gap-1"
+                      >
+                        <Users className="h-3 w-3" /> Rooms
+                      </button>
+                    )}
                   </div>
                 </li>
               );
@@ -145,6 +168,15 @@ export function CourseSheet({ slug, hello, onOpenChapter }: Props) {
           chapterTitle={quiz.title}
           chapterObjective={quiz.objective}
           onPassed={() => setStatus(quiz.id, "completed")}
+        />
+      )}
+
+      {tute && (
+        <TuteDialog
+          open={!!tute}
+          onOpenChange={(o) => { if (!o) setTute(null); }}
+          language={slug}
+          chapterTitle={tute.n > 0 ? `Chapter ${tute.n}: ${tute.title}` : undefined}
         />
       )}
     </>
