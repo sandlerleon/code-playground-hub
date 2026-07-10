@@ -203,7 +203,19 @@ function Room() {
         getCode={() => code}
         getLastRun={() => (result ? { stdout: result.stdout, stderr: result.stderr, code: result.code } : null)}
       />
-      <RoomsPanel language={lang.slug} />
+      <RoomsPanel
+        language={lang.slug}
+        open={roomsOpen || roomsFocus != null ? true : undefined}
+        onOpenChange={setRoomsOpen}
+        focusChapter={roomsFocus?.chapter ?? null}
+        focusToken={roomsFocus?.token}
+      />
+      <TuteDialog
+        open={tuteOpen}
+        onOpenChange={setTuteOpen}
+        language={lang.slug}
+        chapterTitle={currentChapter ? `Chapter ${currentChapter}` : undefined}
+      />
     </div>
   );
 }
