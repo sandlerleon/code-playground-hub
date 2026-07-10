@@ -9,10 +9,11 @@ import { JanewayChat } from "@/components/JanewayChat";
 import { CourseSheet } from "@/components/CourseSheet";
 import { RoomsPanel } from "@/components/RoomsPanel";
 import { MusicPlayer } from "@/components/MusicPlayer";
+import { TuteDialog } from "@/components/TuteDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Play, Save, Loader2, ArrowLeft, Share2 } from "lucide-react";
+import { Play, Save, Loader2, ArrowLeft, Share2, Youtube } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -52,6 +53,10 @@ function Room() {
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<RunCodeResult | null>(null);
   const [currentId, setCurrentId] = useState<string | null>(null);
+  const [currentChapter, setCurrentChapter] = useState<number | null>(null);
+  const [roomsOpen, setRoomsOpen] = useState(false);
+  const [roomsFocus, setRoomsFocus] = useState<{ chapter: number; token: number } | null>(null);
+  const [tuteOpen, setTuteOpen] = useState(false);
   const runFn = useServerFn(runCodeFn);
 
   useEffect(() => {
@@ -125,15 +130,20 @@ function Room() {
               setCode(ch.starter);
               setTitle(`Ch ${ch.n}: ${ch.title}`);
               setCurrentId(null);
+              setCurrentChapter(ch.n);
               setResult(null);
               toast.success(`Chapter ${ch.n}: ${ch.title}`);
             }}
+            onOpenRooms={(n) => { setRoomsFocus({ chapter: n, token: Date.now() }); setRoomsOpen(true); }}
           />
           <div className={`flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br ${lang.accent} font-mono text-xs font-bold text-black/80`}>{lang.icon}</div>
           <div className="flex-1">
             <Input value={title} onChange={e=>setTitle(e.target.value)} className="h-8 max-w-xs border-transparent bg-transparent text-base font-semibold focus-visible:border-input" />
             <div className="text-xs text-muted-foreground font-mono">{lang.name} · {lang.piston.version}</div>
           </div>
+          <Button variant="outline" size="sm" onClick={() => setTuteOpen(true)} title="Video tutorial">
+            <Youtube className="h-4 w-4 mr-2 text-red-500" />Tute
+          </Button>
           <MusicPlayer />
           <Button variant="outline" size="sm" onClick={save} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} <span className="ml-2">Save</span>
@@ -193,7 +203,19 @@ function Room() {
         getCode={() => code}
         getLastRun={() => (result ? { stdout: result.stdout, stderr: result.stderr, code: result.code } : null)}
       />
-      <RoomsPanel language={lang.slug} />
+      <RoomsPanel
+        language={lang.slug}
+        open={roomsOpen}
+        onOpenChange={setRoomsOpen}
+        focusChapter={roomsFocus?.chapter ?? null}
+        focusToken={roomsFocus?.token}
+      />
+      <TuteDialog
+        open={tuteOpen}
+        onOpenChange={setTuteOpen}
+        language={lang.slug}
+        chapterTitle={currentChapter ? `Chapter ${currentChapter}` : undefined}
+      />
     </div>
   );
 }

@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { LANGUAGES } from "@/lib/languages";
 import { Nav } from "@/components/Nav";
+import { TuteDialog } from "@/components/TuteDialog";
 import heroImg from "@/assets/hero.jpg";
-import { ArrowRight, Code2, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Code2, Sparkles, Users, Youtube } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -15,6 +17,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Lobby() {
+  const [tute, setTute] = useState<string | null>(null);
   return (
     <div className="min-h-screen">
       <Nav />
@@ -66,9 +69,18 @@ function Lobby() {
                 <Link to="/lang/$slug" params={{ slug: lang.slug }} className="text-primary inline-flex items-center">
                   Enter room <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
-                <Link to="/leaderboard/$slug" params={{ slug: lang.slug }} className="text-xs text-muted-foreground hover:text-primary">
-                  🏆 Leaderboard
-                </Link>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setTute(lang.slug)}
+                    className="text-xs text-red-400 hover:text-red-300 inline-flex items-center gap-1"
+                    title="Video tutorial"
+                  >
+                    <Youtube className="h-3 w-3" /> Tute
+                  </button>
+                  <Link to="/leaderboard/$slug" params={{ slug: lang.slug }} className="text-xs text-muted-foreground hover:text-primary">
+                    🏆
+                  </Link>
+                </div>
               </div>
             </div>
           ))}
@@ -79,6 +91,9 @@ function Lobby() {
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
         Built with Lovable Cloud · Code execution by Piston
       </footer>
+      {tute && (
+        <TuteDialog open={!!tute} onOpenChange={(o) => { if (!o) setTute(null); }} language={tute} />
+      )}
     </div>
   );
 }
