@@ -205,7 +205,7 @@ function Room() {
       />
       <RoomsPanel
         language={lang.slug}
-        open={roomsOpen || roomsFocus != null ? true : undefined}
+        open={roomsOpen}
         onOpenChange={setRoomsOpen}
         focusChapter={roomsFocus?.chapter ?? null}
         focusToken={roomsFocus?.token}
