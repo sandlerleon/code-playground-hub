@@ -130,15 +130,20 @@ function Room() {
               setCode(ch.starter);
               setTitle(`Ch ${ch.n}: ${ch.title}`);
               setCurrentId(null);
+              setCurrentChapter(ch.n);
               setResult(null);
               toast.success(`Chapter ${ch.n}: ${ch.title}`);
             }}
+            onOpenRooms={(n) => setRoomsFocus({ chapter: n, token: Date.now() })}
           />
           <div className={`flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br ${lang.accent} font-mono text-xs font-bold text-black/80`}>{lang.icon}</div>
           <div className="flex-1">
             <Input value={title} onChange={e=>setTitle(e.target.value)} className="h-8 max-w-xs border-transparent bg-transparent text-base font-semibold focus-visible:border-input" />
             <div className="text-xs text-muted-foreground font-mono">{lang.name} · {lang.piston.version}</div>
           </div>
+          <Button variant="outline" size="sm" onClick={() => setTuteOpen(true)} title="Video tutorial">
+            <Youtube className="h-4 w-4 mr-2 text-red-500" />Tute
+          </Button>
           <MusicPlayer />
           <Button variant="outline" size="sm" onClick={save} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} <span className="ml-2">Save</span>
