@@ -91,6 +91,9 @@ function Lobby() {
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
         Built with Lovable Cloud · Code execution by Piston
       </footer>
+      {tute && (
+        <TuteDialog open={!!tute} onOpenChange={(o) => { if (!o) setTute(null); }} language={tute} />
+      )}
     </div>
   );
 }
