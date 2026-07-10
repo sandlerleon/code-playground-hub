@@ -53,6 +53,10 @@ function Room() {
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<RunCodeResult | null>(null);
   const [currentId, setCurrentId] = useState<string | null>(null);
+  const [currentChapter, setCurrentChapter] = useState<number | null>(null);
+  const [roomsOpen, setRoomsOpen] = useState(false);
+  const [roomsFocus, setRoomsFocus] = useState<{ chapter: number; token: number } | null>(null);
+  const [tuteOpen, setTuteOpen] = useState(false);
   const runFn = useServerFn(runCodeFn);
 
   useEffect(() => {
