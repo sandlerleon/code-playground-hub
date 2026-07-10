@@ -134,7 +134,7 @@ function Room() {
               setResult(null);
               toast.success(`Chapter ${ch.n}: ${ch.title}`);
             }}
-            onOpenRooms={(n) => setRoomsFocus({ chapter: n, token: Date.now() })}
+            onOpenRooms={(n) => { setRoomsFocus({ chapter: n, token: Date.now() }); setRoomsOpen(true); }}
           />
           <div className={`flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br ${lang.accent} font-mono text-xs font-bold text-black/80`}>{lang.icon}</div>
           <div className="flex-1">
