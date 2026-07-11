@@ -58,6 +58,7 @@ function Room() {
   const [roomsOpen, setRoomsOpen] = useState(false);
   const [roomsFocus, setRoomsFocus] = useState<{ chapter: number; token: number } | null>(null);
   const [tuteOpen, setTuteOpen] = useState(false);
+  const [interviewOpen, setInterviewOpen] = useState(false);
   const runFn = useServerFn(runCodeFn);
 
   useEffect(() => {
