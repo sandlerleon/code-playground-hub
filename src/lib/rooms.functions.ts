@@ -69,7 +69,7 @@ export const jennyModerate = createServerFn({ method: "POST" })
           { role: "system", content: system },
           {
             role: "user",
-            content: `Recent transcript:\n${transcript}\n\nLatest message: ${data.triggerText}\n\nReply as Hologram Jenny.`,
+            content: `Recent transcript:\n${transcript}\n\nLatest message: ${data.triggerText}\n\nReply as Instructor Jenny.`,
           },
         ],
       }),
