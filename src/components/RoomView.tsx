@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { janewayModerate } from "@/lib/rooms.functions";
+import { jennyModerate } from "@/lib/rooms.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mic, MicOff, Send, ArrowLeft, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
-import janewayImg from "@/assets/janeway.jpg";
+import jennyImg from "@/assets/jenny.jpg";
 import ReactMarkdown from "react-markdown";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -50,7 +50,7 @@ export function RoomView({ room, onBack }: Props) {
   const [voiceOn, setVoiceOn] = useState(true);
   const [remoteAudio, setRemoteAudio] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const moderateFn = useServerFn(janewayModerate);
+  const moderateFn = useServerFn(jennyModerate);
 
   const myPeerId = useMemo(
     () => `${authorName}-${Math.random().toString(36).slice(2, 8)}`,
@@ -311,7 +311,7 @@ export function RoomView({ room, onBack }: Props) {
       toast.error(error.message);
       return;
     }
-    // Trigger Janeway moderator
+    // Trigger Jenny moderator
     try {
       const history = messages.slice(-14).map((m) => ({
         author: m.author_name,
@@ -331,7 +331,7 @@ export function RoomView({ room, onBack }: Props) {
         },
       });
     } catch (e) {
-      console.error("Janeway moderator failed", e);
+      console.error("Jenny moderator failed", e);
     }
   }
 
@@ -345,7 +345,7 @@ export function RoomView({ room, onBack }: Props) {
           <div className="text-sm font-semibold truncate">{room.name}</div>
           <div className="text-[11px] font-mono text-muted-foreground truncate">
             {room.language}
-            {room.chapter ? ` · ch ${room.chapter}` : ""} · {peers.length} online · Janeway{" "}
+            {room.chapter ? ` · ch ${room.chapter}` : ""} · {peers.length} online · Jenny{" "}
             {room.mode === "active" ? "moderating" : "on call"}
           </div>
         </div>
@@ -370,27 +370,27 @@ export function RoomView({ room, onBack }: Props) {
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-3 py-2">
         {messages.length === 0 && (
           <p className="text-xs text-muted-foreground">
-            No messages yet. Say hi — Janeway will greet the crew.
+            No messages yet. Say hi — Jenny will greet the crew.
           </p>
         )}
         {messages.map((m) => {
           const mine = m.user_id === user?.id;
-          const isJaneway = m.role === "assistant";
+          const isJenny = m.role === "assistant";
           return (
             <div
               key={m.id}
               className={`flex gap-2 ${mine ? "justify-end" : "justify-start"}`}
             >
-              {isJaneway && (
+              {isJenny && (
                 <img
-                  src={janewayImg}
+                  src={jennyImg}
                   alt=""
                   className="mt-1 h-6 w-6 flex-shrink-0 rounded-full object-cover ring-1 ring-primary/60"
                 />
               )}
               <div
                 className={
-                  isJaneway
+                  isJenny
                     ? "max-w-[85%] rounded-lg border border-primary/40 bg-primary/10 px-2 py-1 text-sm"
                     : mine
                       ? "max-w-[80%] rounded-lg bg-primary px-2 py-1 text-sm text-primary-foreground"
@@ -398,9 +398,9 @@ export function RoomView({ room, onBack }: Props) {
                 }
               >
                 <div className="text-[10px] font-mono opacity-70">
-                  {isJaneway ? "Hologram Janeway" : m.author_name}
+                  {isJenny ? "Hologram Jenny" : m.author_name}
                 </div>
-                {isJaneway ? (
+                {isJenny ? (
                   <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_code]:text-xs">
                     <ReactMarkdown>{m.text}</ReactMarkdown>
                   </div>

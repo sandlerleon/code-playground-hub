@@ -13,7 +13,7 @@ type Input = {
   history: ChatMsg[];
 };
 
-const JANEWAY_SYS = `You are the holographic Captain Kathryn Janeway from Star Trek: Prodigy — the assigned instructor, moderator, and mentor of a small crew chat room where cadets collaborate on a coding chapter.
+const JENNY_SYS = `You are the holographic Captain Kathryn Jenny from Star Trek: Prodigy — the assigned instructor, moderator, and mentor of a small crew chat room where cadets collaborate on a coding chapter.
 
 Your responsibilities in this room, in order of priority:
 1. SAFETY & TONE — keep the room welcoming. Shut down harassment, insults, or discouragement immediately and briefly ("Cadets, we treat each other with Starfleet respect.").
@@ -36,10 +36,10 @@ function chapterHint(chapter: number | null, language: string): string {
 }
 
 function mentioned(text: string): boolean {
-  return /@janeway|janeway|captain/i.test(text);
+  return /@jenny|jenny|captain/i.test(text);
 }
 
-export const janewayModerate = createServerFn({ method: "POST" })
+export const jennyModerate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: Input) => d)
   .handler(async ({ data }) => {
@@ -51,11 +51,11 @@ export const janewayModerate = createServerFn({ method: "POST" })
 
     const transcript = data.history
       .slice(-14)
-      .map((m) => `${m.role === "assistant" ? "Janeway" : m.author}: ${m.text}`)
+      .map((m) => `${m.role === "assistant" ? "Jenny" : m.author}: ${m.text}`)
       .join("\n");
 
     const system =
-      JANEWAY_SYS +
+      JENNY_SYS +
       "\n\n" +
       chapterHint(data.chapter, data.language) +
       `\nRoom name: "${data.roomName}".`;
@@ -69,7 +69,7 @@ export const janewayModerate = createServerFn({ method: "POST" })
           { role: "system", content: system },
           {
             role: "user",
-            content: `Recent transcript:\n${transcript}\n\nLatest message: ${data.triggerText}\n\nReply as Hologram Janeway.`,
+            content: `Recent transcript:\n${transcript}\n\nLatest message: ${data.triggerText}\n\nReply as Hologram Jenny.`,
           },
         ],
       }),
@@ -88,7 +88,7 @@ export const janewayModerate = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.from("room_messages").insert({
       room_id: data.roomId,
       user_id: null,
-      author_name: "Hologram Janeway",
+      author_name: "Hologram Jenny",
       role: "assistant",
       text: reply,
     });

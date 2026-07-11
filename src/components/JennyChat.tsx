@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import ReactMarkdown from "react-markdown";
-import janewayImg from "@/assets/janeway.jpg";
+import jennyImg from "@/assets/jenny.jpg";
 import { Button } from "@/components/ui/button";
 import {
   Send,
@@ -95,7 +95,7 @@ function buildContextMessage(
     .join("\n");
 }
 
-export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props) {
+export function JennyChat({ storageKey, language, getCode, getLastRun }: Props) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [initial] = useState<UIMessage[]>(() => loadMessages(storageKey));
@@ -105,7 +105,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
   const [speaking, setSpeaking] = useState(false);
   const [spokenLang, setSpokenLang] = useState<string>(() => {
     if (typeof window === "undefined") return "English";
-    return window.localStorage.getItem("janeway-spoken-lang") ?? "English";
+    return window.localStorage.getItem("jenny-spoken-lang") ?? "English";
   });
 
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -213,7 +213,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
   // Persist spoken language
   useEffect(() => {
     try {
-      window.localStorage.setItem("janeway-spoken-lang", spokenLang);
+      window.localStorage.setItem("jenny-spoken-lang", spokenLang);
     } catch {
       /* ignore */
     }
@@ -336,7 +336,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
       recorder.start();
       setRecording(true);
     } catch (e) {
-      toast.error("Microphone access is required to talk to Janeway.");
+      toast.error("Microphone access is required to talk to Jenny.");
       console.error(e);
     }
   }
@@ -368,18 +368,18 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-full bg-card border border-border shadow-lg pl-2 pr-4 py-2 hover:bg-accent transition group"
-          aria-label="Open Hologram Janeway"
+          aria-label="Open Hologram Jenny"
         >
           <img
-            src={janewayImg}
-            alt="Hologram Janeway"
+            src={jennyImg}
+            alt="Hologram Jenny"
             width={1024}
             height={1024}
             loading="lazy"
             className="h-10 w-10 rounded-full object-cover ring-2 ring-primary/60"
           />
           <div className="text-left">
-            <div className="text-sm font-semibold">Hologram Janeway</div>
+            <div className="text-sm font-semibold">Hologram Jenny</div>
             <div className="text-xs text-muted-foreground">Talk to your captain</div>
           </div>
           <MessageCircle className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
@@ -391,8 +391,8 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
           <div className="flex items-center gap-2 px-4 py-3 border-b bg-gradient-to-r from-primary/10 to-transparent">
             <div className="relative">
               <img
-                src={janewayImg}
-                alt="Janeway"
+                src={jennyImg}
+                alt="Jenny"
                 width={1024}
                 height={1024}
                 loading="lazy"
@@ -400,13 +400,13 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
               />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold truncate">Hologram Janeway</div>
+              <div className="text-sm font-semibold truncate">Hologram Jenny</div>
               <div className="text-[11px] font-mono text-muted-foreground truncate">
                 {speaking ? "Speaking…" : recording ? "Listening…" : "U.S.S. Protostar"}
               </div>
             </div>
             <Select value={spokenLang} onValueChange={setSpokenLang}>
-              <SelectTrigger className="h-8 w-[110px] text-xs" title="Janeway's spoken language">
+              <SelectTrigger className="h-8 w-[110px] text-xs" title="Jenny's spoken language">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent align="end">
@@ -438,7 +438,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
               <div className="text-sm text-muted-foreground space-y-2">
                 <p className="font-medium text-foreground">Welcome aboard, cadet! ☕</p>
                 <p>
-                  I'm Hologram Janeway, your training officer. Type or tap the mic to talk — I'll
+                  I'm Hologram Jenny, your training officer. Type or tap the mic to talk — I'll
                   walk you through your <span className="font-mono">{language}</span> code, step by
                   step.
                 </p>
@@ -459,7 +459,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
                 >
                   {m.role === "assistant" && (
                     <img
-                      src={janewayImg}
+                      src={jennyImg}
                       alt=""
                       width={1024}
                       height={1024}
@@ -483,7 +483,7 @@ export function JanewayChat({ storageKey, language, getCode, getLastRun }: Props
             {status === "submitted" && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <img
-                  src={janewayImg}
+                  src={jennyImg}
                   alt=""
                   width={1024}
                   height={1024}

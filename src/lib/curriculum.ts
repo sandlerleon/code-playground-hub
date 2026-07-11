@@ -84,7 +84,7 @@ const STARTERS: Record<string, string[]> = {
 // Fallback: minimal per-language "hello" style so every language has 20 chapters.
 function fallbackStarter(slug: string, i: number, hello: string): string {
   const label = TITLES[i].title;
-  return `// Chapter ${i + 1}: ${label}\n// Ask Janeway to walk you through this topic in ${slug}.\n${hello}`;
+  return `// Chapter ${i + 1}: ${label}\n// Ask Jenny to walk you through this topic in ${slug}.\n${hello}`;
 }
 
 export function buildCurriculum(slug: string, hello: string): Chapter[] {
