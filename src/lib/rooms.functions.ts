@@ -88,7 +88,7 @@ export const jennyModerate = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.from("room_messages").insert({
       room_id: data.roomId,
       user_id: null,
-      author_name: "Hologram Jenny",
+      author_name: "Instructor Jenny",
       role: "assistant",
       text: reply,
     });
