@@ -19,7 +19,7 @@ export const Route = createFileRoute("/api/tts")({
 
         const langLine =
           language && language.trim()
-            ? ` Speak in ${language} with a natural native accent for that language while keeping Jenny's warm captain persona.`
+            ? ` Speak in ${language} with a natural native accent for that language while keeping Jenny's warm instructor persona.`
             : ` Speak in clear American English.`;
 
         const upstream = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
