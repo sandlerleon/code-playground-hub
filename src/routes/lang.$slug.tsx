@@ -146,6 +146,15 @@ function Room() {
           <Button variant="outline" size="sm" onClick={() => setTuteOpen(true)} title="Video tutorial">
             <Youtube className="h-4 w-4 mr-2 text-red-500" />Tute
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setInterviewOpen(true)}
+            title="Take the graduation interview with Jenny"
+            className="border-primary/50 text-primary hover:bg-primary/10"
+          >
+            <GraduationCap className="h-4 w-4 mr-2" />Interview
+          </Button>
           <MusicPlayer />
           <Button variant="outline" size="sm" onClick={save} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} <span className="ml-2">Save</span>
