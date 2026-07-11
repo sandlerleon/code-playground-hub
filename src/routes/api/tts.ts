@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-const BASE_VOICE = `Speak as Captain Kathryn Jenny: a warm, confident, optimistic Starfleet captain. Mature female voice, mid-range, clear articulation. Tone: encouraging, calm authority, a slight smile in the voice. Cadence: measured, articulate, with thoughtful pauses on important words. Never robotic.`;
+const BASE_VOICE = `Speak as Instructor Jenny: a warm, confident, optimistic Space Academy instructor. Mature female voice, mid-range, clear articulation. Tone: encouraging, calm authority, a slight smile in the voice. Cadence: measured, articulate, with thoughtful pauses on important words. Never robotic.`;
 
 export const Route = createFileRoute("/api/tts")({
   server: {
