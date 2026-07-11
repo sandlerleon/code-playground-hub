@@ -5,15 +5,16 @@ import { useServerFn } from "@tanstack/react-start";
 import { getLang } from "@/lib/languages";
 import { runCodeFn, type RunCodeResult } from "@/lib/run-code.functions";
 import { Nav } from "@/components/Nav";
-import { JanewayChat } from "@/components/JanewayChat";
+import { JennyChat } from "@/components/JennyChat";
 import { CourseSheet } from "@/components/CourseSheet";
 import { RoomsPanel } from "@/components/RoomsPanel";
 import { MusicPlayer } from "@/components/MusicPlayer";
 import { TuteDialog } from "@/components/TuteDialog";
+import { InterviewDialog } from "@/components/InterviewDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Play, Save, Loader2, ArrowLeft, Share2, Youtube } from "lucide-react";
+import { Play, Save, Loader2, ArrowLeft, Share2, Youtube, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -57,6 +58,7 @@ function Room() {
   const [roomsOpen, setRoomsOpen] = useState(false);
   const [roomsFocus, setRoomsFocus] = useState<{ chapter: number; token: number } | null>(null);
   const [tuteOpen, setTuteOpen] = useState(false);
+  const [interviewOpen, setInterviewOpen] = useState(false);
   const runFn = useServerFn(runCodeFn);
 
   useEffect(() => {
@@ -144,6 +146,15 @@ function Room() {
           <Button variant="outline" size="sm" onClick={() => setTuteOpen(true)} title="Video tutorial">
             <Youtube className="h-4 w-4 mr-2 text-red-500" />Tute
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setInterviewOpen(true)}
+            title="Take the graduation interview with Jenny"
+            className="border-primary/50 text-primary hover:bg-primary/10"
+          >
+            <GraduationCap className="h-4 w-4 mr-2" />Interview
+          </Button>
           <MusicPlayer />
           <Button variant="outline" size="sm" onClick={save} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} <span className="ml-2">Save</span>
@@ -197,8 +208,8 @@ function Room() {
           </Card>
         </div>
       </div>
-      <JanewayChat
-        storageKey={`janeway-chat:${lang.slug}`}
+      <JennyChat
+        storageKey={`jenny-chat:${lang.slug}`}
         language={lang.slug}
         getCode={() => code}
         getLastRun={() => (result ? { stdout: result.stdout, stderr: result.stderr, code: result.code } : null)}
@@ -215,6 +226,12 @@ function Room() {
         onOpenChange={setTuteOpen}
         language={lang.slug}
         chapterTitle={currentChapter ? `Chapter ${currentChapter}` : undefined}
+      />
+      <InterviewDialog
+        open={interviewOpen}
+        onOpenChange={setInterviewOpen}
+        language={lang.slug}
+        languageName={lang.name}
       />
     </div>
   );

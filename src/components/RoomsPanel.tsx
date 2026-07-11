@@ -148,7 +148,7 @@ export function RoomsPanel({ language, open: openProp, onOpenChange, focusChapte
                 <div className="flex-1">
                   <div className="text-sm font-semibold">Crew rooms · {language}</div>
                   <div className="text-[11px] font-mono text-muted-foreground">
-                    Chat, voice, and Hologram Janeway
+                    Chat, voice, and Instructor Jenny
                   </div>
                 </div>
                 <Button
@@ -214,10 +214,10 @@ export function RoomsPanel({ language, open: openProp, onOpenChange, focusChapte
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="active" className="text-xs">
-                          Janeway active
+                          Jenny active
                         </SelectItem>
                         <SelectItem value="passive" className="text-xs">
-                          @janeway only
+                          @jenny only
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -257,7 +257,7 @@ export function RoomsPanel({ language, open: openProp, onOpenChange, focusChapte
                           </div>
                           <div className="text-[11px] font-mono text-muted-foreground">
                             {r.chapter ? `ch ${r.chapter} · ` : ""}
-                            Janeway {r.mode === "active" ? "moderating" : "on call"}
+                            Jenny {r.mode === "active" ? "moderating" : "on call"}
                           </div>
                         </button>
                         {user && r.creator_id === user.id && (

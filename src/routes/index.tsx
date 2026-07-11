@@ -88,8 +88,59 @@ function Lobby() {
         </div>
       </section>
 
-      <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        Built with Lovable Cloud · Code execution by Piston
+      <footer className="border-t bg-gradient-to-b from-transparent to-primary/5">
+        <div className="mx-auto max-w-5xl px-6 py-12">
+          <div className="rounded-2xl border border-primary/30 bg-card p-8 text-center shadow-lg">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              <Sparkles className="h-3 w-3" /> Next mission after graduation
+            </div>
+            <h3 className="mt-4 font-display text-2xl font-bold">
+              Ready for real-world projects? Continue your journey at freeCodeCamp.
+            </h3>
+            <p className="mt-3 text-sm text-muted-foreground max-w-2xl mx-auto">
+              Once you've graduated from Space Academy, level up with freeCodeCamp's free,
+              community-driven curriculum: full-stack web development, data science, machine
+              learning, and industry-recognized certifications. Thousands of hours of hands-on
+              projects — completely free, forever.
+            </p>
+            <a
+              href="https://www.freecodecamp.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition"
+            >
+              Continue at freeCodeCamp.org <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+          <p className="mt-8 text-center text-xs text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+            <strong>Credit &amp; acknowledgement:</strong> Space Academy is an independent training
+            simulator inspired by the open education movement. Video tutorials embedded in the
+            course are sourced from the{" "}
+            <a
+              href="https://www.youtube.com/@freecodecamp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline"
+            >
+              freeCodeCamp YouTube channel
+            </a>{" "}
+            and the coding-music stream is provided courtesy of{" "}
+            <a
+              href="https://coderadio.freecodecamp.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline"
+            >
+              CodeRadio by freeCodeCamp
+            </a>
+            . freeCodeCamp.org is a donor-supported 501(c)(3) nonprofit — all credit for their
+            world-class free curriculum belongs to them. This project is not affiliated with or
+            endorsed by freeCodeCamp.
+          </p>
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            Built with Lovable Cloud · Code execution by Piston
+          </p>
+        </div>
       </footer>
       {tute && (
         <TuteDialog open={!!tute} onOpenChange={(o) => { if (!o) setTute(null); }} language={tute} />
