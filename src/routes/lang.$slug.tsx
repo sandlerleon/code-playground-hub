@@ -227,6 +227,12 @@ function Room() {
         language={lang.slug}
         chapterTitle={currentChapter ? `Chapter ${currentChapter}` : undefined}
       />
+      <InterviewDialog
+        open={interviewOpen}
+        onOpenChange={setInterviewOpen}
+        language={lang.slug}
+        languageName={lang.name}
+      />
     </div>
   );
 }
