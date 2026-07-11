@@ -398,7 +398,7 @@ export function RoomView({ room, onBack }: Props) {
                 }
               >
                 <div className="text-[10px] font-mono opacity-70">
-                  {isJenny ? "Hologram Jenny" : m.author_name}
+                  {isJenny ? "Instructor Jenny" : m.author_name}
                 </div>
                 {isJenny ? (
                   <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_code]:text-xs">

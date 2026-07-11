@@ -148,7 +148,7 @@ export function RoomsPanel({ language, open: openProp, onOpenChange, focusChapte
                 <div className="flex-1">
                   <div className="text-sm font-semibold">Crew rooms · {language}</div>
                   <div className="text-[11px] font-mono text-muted-foreground">
-                    Chat, voice, and Hologram Jenny
+                    Chat, voice, and Instructor Jenny
                   </div>
                 </div>
                 <Button
