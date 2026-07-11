@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getLang } from "@/lib/languages";
 import { runCodeFn, type RunCodeResult } from "@/lib/run-code.functions";
 import { Nav } from "@/components/Nav";
-import { JanewayChat } from "@/components/JanewayChat";
+import { JennyChat } from "@/components/JennyChat";
 import { CourseSheet } from "@/components/CourseSheet";
 import { RoomsPanel } from "@/components/RoomsPanel";
 import { MusicPlayer } from "@/components/MusicPlayer";
@@ -197,8 +197,8 @@ function Room() {
           </Card>
         </div>
       </div>
-      <JanewayChat
-        storageKey={`janeway-chat:${lang.slug}`}
+      <JennyChat
+        storageKey={`jenny-chat:${lang.slug}`}
         language={lang.slug}
         getCode={() => code}
         getLastRun={() => (result ? { stdout: result.stdout, stderr: result.stderr, code: result.code } : null)}
