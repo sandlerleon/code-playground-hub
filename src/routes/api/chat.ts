@@ -28,14 +28,16 @@ type ChatRequestBody = { messages?: unknown; language?: string };
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
+      OPTIONS: async ({ request }) => preflight(request),
       POST: async ({ request }) => {
+        const cors = corsHeaders(request);
         const { messages, language } = (await request.json()) as ChatRequestBody;
         if (!Array.isArray(messages)) {
-          return new Response("Messages are required", { status: 400 });
+          return new Response("Messages are required", { status: 400, headers: cors });
         }
 
         const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500, headers: cors });
 
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("google/gemini-3-flash-preview");
@@ -51,12 +53,14 @@ export const Route = createFileRoute("/api/chat")({
             system: JENNY_SYSTEM + langDirective,
             messages: await convertToModelMessages(messages as UIMessage[]),
           });
-          return result.toUIMessageStreamResponse({
+          const res = result.toUIMessageStreamResponse({
             originalMessages: messages as UIMessage[],
           });
+          for (const [k, v] of Object.entries(cors)) res.headers.set(k, v);
+          return res;
         } catch (e) {
           const msg = e instanceof Error ? e.message : "Chat failed";
-          return new Response(msg, { status: 500 });
+          return new Response(msg, { status: 500, headers: cors });
         }
       },
     },
