@@ -1,20 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { corsHeaders, preflight } from "@/lib/cors";
 
 const BASE_VOICE = `Speak as Instructor Jenny: a warm, confident, optimistic Space Academy instructor. Mature female voice, mid-range, clear articulation. Tone: encouraging, calm authority, a slight smile in the voice. Cadence: measured, articulate, with thoughtful pauses on important words. Never robotic.`;
 
 export const Route = createFileRoute("/api/tts")({
   server: {
     handlers: {
+      OPTIONS: async ({ request }) => preflight(request),
       POST: async ({ request }) => {
+        const cors = corsHeaders(request);
         const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500, headers: cors });
 
         const { text, language } = (await request.json()) as {
           text?: string;
           language?: string;
         };
         if (!text || typeof text !== "string" || !text.trim()) {
-          return new Response("text required", { status: 400 });
+          return new Response("text required", { status: 400, headers: cors });
         }
 
         const langLine =
@@ -41,6 +44,7 @@ export const Route = createFileRoute("/api/tts")({
           const msg = await upstream.text().catch(() => "");
           return new Response(`TTS failed: ${upstream.status} ${msg.slice(0, 200)}`, {
             status: upstream.status,
+            headers: cors,
           });
         }
 
@@ -48,6 +52,7 @@ export const Route = createFileRoute("/api/tts")({
           headers: {
             "Content-Type": "audio/mpeg",
             "Cache-Control": "no-store",
+            ...cors,
           },
         });
       },

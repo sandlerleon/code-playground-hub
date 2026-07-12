@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { corsHeaders, preflight } from "@/lib/cors";
 
 const MIME_TO_EXT: Record<string, string> = {
   "audio/webm": "webm",
@@ -12,17 +13,19 @@ const MIME_TO_EXT: Record<string, string> = {
 export const Route = createFileRoute("/api/stt")({
   server: {
     handlers: {
+      OPTIONS: async ({ request }) => preflight(request),
       POST: async ({ request }) => {
+        const cors = corsHeaders(request);
         const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500, headers: cors });
 
         const form = await request.formData();
         const file = form.get("file");
         if (!(file instanceof File) || file.size === 0) {
-          return new Response("file required", { status: 400 });
+          return new Response("file required", { status: 400, headers: cors });
         }
         if (file.size > 20 * 1024 * 1024) {
-          return new Response("file too large", { status: 413 });
+          return new Response("file too large", { status: 413, headers: cors });
         }
 
         const baseType = (file.type || "audio/webm").split(";")[0];
@@ -42,11 +45,14 @@ export const Route = createFileRoute("/api/stt")({
           const msg = await res.text().catch(() => "");
           return new Response(`STT failed: ${res.status} ${msg.slice(0, 300)}`, {
             status: res.status,
+            headers: cors,
           });
         }
 
         const json = (await res.json()) as { text?: string };
-        return Response.json({ text: json.text ?? "" });
+        return new Response(JSON.stringify({ text: json.text ?? "" }), {
+          headers: { "Content-Type": "application/json", ...cors },
+        });
       },
     },
   },
