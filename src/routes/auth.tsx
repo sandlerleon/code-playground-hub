@@ -12,7 +12,7 @@ import { Terminal } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — AI Trainer" }, { name: "description", content: "Sign in or create an account to save and share your code snippets." }] }),
+  head: () => ({ meta: [{ title: "Sign in — AGITeacher.AI" }, { name: "description", content: "Sign in or create an account to save and share your code snippets." }] }),
   component: AuthPage,
 });
 
@@ -62,9 +62,9 @@ function AuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Link to="/" className="mb-8 flex items-center justify-center gap-2 font-bold text-xl">
-          <Terminal className="h-6 w-6 text-primary" />AI Trainer
-        </Link>
+        <a href="https://agiteacher.ai" target="_blank" rel="noopener noreferrer" className="mb-8 flex items-center justify-center gap-2 font-bold text-xl">
+          <Terminal className="h-6 w-6 text-primary" />AGITeacher.AI
+        </a>
         <Card className="p-6">
           <Tabs defaultValue="signin">
             <TabsList className="grid grid-cols-2 w-full">

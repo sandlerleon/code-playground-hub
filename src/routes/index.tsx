@@ -9,7 +9,7 @@ import { ArrowRight, Code2, Sparkles, Users, Youtube } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AI Trainer — Practice 10 Languages Live" },
+      { title: "AGITeacher.AI — Practice 10 Languages Live" },
       { name: "description", content: "Pick a language room, write code, run it instantly. Save and share like CodePen." },
     ],
   }),
