@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { corsHeaders, preflight } from "@/lib/cors";
 
 const JENNY_SYSTEM = `You are Instructor Jenny, an upbeat AI mentor at the Space Academy — a coding instructor for a young aspiring engineer (the user) inside their code editor.
 
