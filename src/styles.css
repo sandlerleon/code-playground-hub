@@ -71,3 +71,12 @@
   .glass { background: oklch(0.22 0.02 260 / 0.6); backdrop-filter: blur(12px); }
   .font-mono { font-family: var(--font-mono); }
 }
+
+/* Disqus embed: match dark editor chrome */
+.disqus-dark {
+  color-scheme: dark;
+  filter: invert(0.92) hue-rotate(180deg);
+}
+.disqus-dark iframe {
+  filter: none;
+}
