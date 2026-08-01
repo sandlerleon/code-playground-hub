@@ -75,8 +75,5 @@
 /* Disqus embed: match dark editor chrome */
 .disqus-dark {
   color-scheme: dark;
-  filter: invert(0.92) hue-rotate(180deg);
-}
-.disqus-dark iframe {
-  filter: none;
+  background: transparent;
 }
