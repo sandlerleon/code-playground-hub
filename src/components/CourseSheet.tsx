@@ -228,6 +228,7 @@ export function CourseSheet({ slug, hello, onOpenChapter, onOpenRooms }: Props) 
           chapter={quiz.n}
           chapterTitle={quiz.title}
           chapterObjective={quiz.objective}
+          locale={locale}
           onPassed={() => setStatus(quiz.id, "completed")}
         />
       )}
