@@ -210,6 +210,9 @@ function Room() {
           </Card>
         </div>
       </div>
+        <CommentsColumn identifier={`lang-${lang.slug}`} title={`${lang.name} room — Eliptum.com`} />
+      </div>
+
       <JennyChat
         storageKey={`jenny-chat:${lang.slug}`}
         language={lang.slug}
