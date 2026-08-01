@@ -3,7 +3,6 @@ import { useState } from "react";
 import { LANGUAGES } from "@/lib/languages";
 import { Nav } from "@/components/Nav";
 import { TuteDialog } from "@/components/TuteDialog";
-import { CommentsColumn } from "@/components/CommentsColumn";
 import { AdBanner } from "@/components/AdBanner";
 import heroImg from "@/assets/hero.jpg";
 import { ArrowRight, Code2, Sparkles, Users, Youtube } from "lucide-react";
@@ -23,6 +22,7 @@ function Lobby() {
   return (
     <div className="min-h-screen">
       <Nav />
+      <AdBanner />
       <section className="relative overflow-hidden border-b">
         <img src={heroImg} alt="" width={1536} height={768} className="absolute inset-0 h-full w-full object-cover opacity-25" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />

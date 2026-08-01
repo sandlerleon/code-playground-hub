@@ -122,6 +122,7 @@ function Room() {
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
+      <AdBanner />
       <div className="border-b bg-card/40">
         <div className="mx-auto max-w-7xl flex items-center gap-4 px-6 py-3">
           <Link to="/" className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /></Link>
