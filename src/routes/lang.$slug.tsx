@@ -168,7 +168,9 @@ function Room() {
         </div>
       </div>
 
-      <div className="flex-1 mx-auto w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
+      <div className="flex-1 flex min-h-0 w-full">
+      <div className="flex-1 min-w-0 mx-auto w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
+
         <Card className="overflow-hidden flex flex-col">
           <div className="border-b px-4 py-2 text-xs font-mono text-muted-foreground">{lang.piston.filename}</div>
           <div className="flex-1 min-h-[400px]">
