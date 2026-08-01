@@ -11,6 +11,9 @@ import { RoomsPanel } from "@/components/RoomsPanel";
 import { MusicPlayer } from "@/components/MusicPlayer";
 import { TuteDialog } from "@/components/TuteDialog";
 import { InterviewDialog } from "@/components/InterviewDialog";
+import { CommentsColumn } from "@/components/CommentsColumn";
+import { AdBanner } from "@/components/AdBanner";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -28,7 +31,7 @@ export const Route = createFileRoute("/lang/$slug")({
   validateSearch: searchSchema,
   head: ({ params }) => ({
     meta: [
-      { title: `${params.slug} room — AGITeacher.AI` },
+      { title: `${params.slug} room — Eliptum.com` },
       { name: "description", content: `Write and run ${params.slug} code in your browser.` },
     ],
   }),
@@ -122,6 +125,7 @@ function Room() {
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
+      <AdBanner />
       <div className="border-b bg-card/40">
         <div className="mx-auto max-w-7xl flex items-center gap-4 px-6 py-3">
           <Link to="/" className="text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /></Link>
@@ -168,7 +172,9 @@ function Room() {
         </div>
       </div>
 
-      <div className="flex-1 mx-auto w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
+      <div className="flex-1 flex min-h-0 w-full">
+      <div className="flex-1 min-w-0 mx-auto w-full max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
+
         <Card className="overflow-hidden flex flex-col">
           <div className="border-b px-4 py-2 text-xs font-mono text-muted-foreground">{lang.piston.filename}</div>
           <div className="flex-1 min-h-[400px]">
@@ -208,6 +214,9 @@ function Room() {
           </Card>
         </div>
       </div>
+        <CommentsColumn identifier={`lang-${lang.slug}`} title={`${lang.name} room — Eliptum.com`} />
+      </div>
+
       <JennyChat
         storageKey={`jenny-chat:${lang.slug}`}
         language={lang.slug}

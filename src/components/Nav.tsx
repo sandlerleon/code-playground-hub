@@ -9,9 +9,9 @@ export function Nav() {
   return (
     <header className="sticky top-0 z-40 glass border-b">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-        <a href="https://agiteacher.ai" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 font-bold text-lg">
+        <a href="https://eliptum.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 font-bold text-lg">
           <Terminal className="h-5 w-5 text-primary" />
-          <span>AGITeacher.AI</span>
+          <span>Eliptum.com</span>
         </a>
         <nav className="flex items-center gap-2">
           {!loading && user ? (

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Check, Circle, Dot, Award, Users, Youtube } from "lucide-react";
+import { BookOpen, Check, Circle, Dot, Award, Users, Youtube, Languages } from "lucide-react";
 import {
   buildCurriculum,
   loadProgress,
@@ -14,6 +15,15 @@ import { useAuth } from "@/hooks/use-auth";
 import { toLetterGrade, gradeColor } from "@/lib/grade";
 import { QuizDialog } from "@/components/QuizDialog";
 import { TuteDialog } from "@/components/TuteDialog";
+import { SPOKEN_LANGUAGES } from "@/components/JennyChat";
+import { translateCurriculumFn } from "@/lib/translate.functions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Props = {
   slug: string;
@@ -22,12 +32,46 @@ type Props = {
   onOpenRooms?: (chapter: number) => void;
 };
 
+const LOCALE_KEY = "course-locale";
+
 export function CourseSheet({ slug, hello, onOpenChapter, onOpenRooms }: Props) {
   const chapters = buildCurriculum(slug, hello);
   const { user } = useAuth();
   const [progress, setProgress] = useState<ProgressMap>({});
   const [best, setBest] = useState<Record<number, number>>({});
   const [quiz, setQuiz] = useState<Chapter | null>(null);
+  const [locale, setLocale] = useState("English");
+  const [i18n, setI18n] = useState<{ title: string; objective: string }[] | null>(null);
+  const [translating, setTranslating] = useState(false);
+  const translate = useServerFn(translateCurriculumFn);
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(LOCALE_KEY);
+    if (saved) setLocale(saved);
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(LOCALE_KEY, locale);
+    if (locale === "English") { setI18n(null); return; }
+    const cacheKey = `course-i18n:${locale}`;
+    const cached = window.localStorage.getItem(cacheKey);
+    if (cached) {
+      try { setI18n(JSON.parse(cached)); return; } catch { /* refetch */ }
+    }
+    let cancelled = false;
+    setTranslating(true);
+    translate({ data: { targetLanguage: locale, items: chapters.map((c) => ({ title: c.title, objective: c.objective })) } })
+      .then((r) => {
+        if (cancelled) return;
+        setI18n(r.items);
+        window.localStorage.setItem(cacheKey, JSON.stringify(r.items));
+      })
+      .catch(() => { if (!cancelled) setI18n(null); })
+      .finally(() => { if (!cancelled) setTranslating(false); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
+
   const [tute, setTute] = useState<Chapter | null>(null);
 
   useEffect(() => {
@@ -82,6 +126,20 @@ export function CourseSheet({ slug, hello, onOpenChapter, onOpenRooms }: Props) 
               <span className="inline-flex items-center gap-1 ml-2"><Circle className="h-3 w-3 text-amber-400 fill-amber-400" /> viewed</span>{" "}
               <span className="inline-flex items-center gap-1 ml-2"><Check className="h-3 w-3 text-emerald-400" /> completed</span>
             </p>
+            <div className="mt-2 flex items-center gap-2">
+              <Languages className="h-3.5 w-3.5 text-muted-foreground" />
+              <Select value={locale} onValueChange={setLocale}>
+                <SelectTrigger className="h-8 w-[150px] text-xs" title="Course & quiz language">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SPOKEN_LANGUAGES.map((l) => (
+                    <SelectItem key={l.code} value={l.code} className="text-xs">{l.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {translating && <span className="text-[11px] text-muted-foreground">translating…</span>}
+            </div>
             <button
               onClick={() => setTute({ id: "lang", n: 0, title: "", objective: "", starter: "" })}
               className="mt-2 inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 self-start"
@@ -91,7 +149,10 @@ export function CourseSheet({ slug, hello, onOpenChapter, onOpenRooms }: Props) 
           </SheetHeader>
 
           <ol className="mt-4 space-y-1">
-            {chapters.map((ch) => {
+            {chapters.map((chBase, idx) => {
+              const tr = i18n?.[idx];
+              const ch = tr ? { ...chBase, title: tr.title, objective: tr.objective } : chBase;
+
               const st = progress[ch.id] ?? "none";
               const rowColor =
                 st === "completed"
@@ -167,6 +228,7 @@ export function CourseSheet({ slug, hello, onOpenChapter, onOpenRooms }: Props) 
           chapter={quiz.n}
           chapterTitle={quiz.title}
           chapterObjective={quiz.objective}
+          locale={locale}
           onPassed={() => setStatus(quiz.id, "completed")}
         />
       )}

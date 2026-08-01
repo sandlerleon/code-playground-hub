@@ -9,7 +9,7 @@ export type QuizQuestion = {
   explanation: string;
 };
 
-type GenInput = { language: string; chapter: number; chapterTitle: string; chapterObjective: string };
+type GenInput = { language: string; chapter: number; chapterTitle: string; chapterObjective: string; locale?: string };
 type SubmitInput = {
   language: string;
   chapter: number;
@@ -51,8 +51,10 @@ export const generateQuizFn = createServerFn({ method: "POST" })
     const user = `Language: ${data.language}
 Chapter ${data.chapter}: ${data.chapterTitle}
 Learning objective: ${data.chapterObjective}
+${data.locale && data.locale !== "English" ? `Write all question text, choices and explanations in ${data.locale} (keep code and identifiers in the original programming language).` : ""}
 
 Write the 10-question certification quiz now. JSON only.`;
+
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
