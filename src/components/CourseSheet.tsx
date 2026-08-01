@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Check, Circle, Dot, Award, Users, Youtube } from "lucide-react";
+import { BookOpen, Check, Circle, Dot, Award, Users, Youtube, Languages } from "lucide-react";
 import {
   buildCurriculum,
   loadProgress,
@@ -14,6 +15,15 @@ import { useAuth } from "@/hooks/use-auth";
 import { toLetterGrade, gradeColor } from "@/lib/grade";
 import { QuizDialog } from "@/components/QuizDialog";
 import { TuteDialog } from "@/components/TuteDialog";
+import { SPOKEN_LANGUAGES } from "@/components/JennyChat";
+import { translateCurriculumFn } from "@/lib/translate.functions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Props = {
   slug: string;
@@ -22,12 +32,46 @@ type Props = {
   onOpenRooms?: (chapter: number) => void;
 };
 
+const LOCALE_KEY = "course-locale";
+
 export function CourseSheet({ slug, hello, onOpenChapter, onOpenRooms }: Props) {
   const chapters = buildCurriculum(slug, hello);
   const { user } = useAuth();
   const [progress, setProgress] = useState<ProgressMap>({});
   const [best, setBest] = useState<Record<number, number>>({});
   const [quiz, setQuiz] = useState<Chapter | null>(null);
+  const [locale, setLocale] = useState("English");
+  const [i18n, setI18n] = useState<{ title: string; objective: string }[] | null>(null);
+  const [translating, setTranslating] = useState(false);
+  const translate = useServerFn(translateCurriculumFn);
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(LOCALE_KEY);
+    if (saved) setLocale(saved);
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(LOCALE_KEY, locale);
+    if (locale === "English") { setI18n(null); return; }
+    const cacheKey = `course-i18n:${locale}`;
+    const cached = window.localStorage.getItem(cacheKey);
+    if (cached) {
+      try { setI18n(JSON.parse(cached)); return; } catch { /* refetch */ }
+    }
+    let cancelled = false;
+    setTranslating(true);
+    translate({ data: { targetLanguage: locale, items: chapters.map((c) => ({ title: c.title, objective: c.objective })) } })
+      .then((r) => {
+        if (cancelled) return;
+        setI18n(r.items);
+        window.localStorage.setItem(cacheKey, JSON.stringify(r.items));
+      })
+      .catch(() => { if (!cancelled) setI18n(null); })
+      .finally(() => { if (!cancelled) setTranslating(false); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
+
   const [tute, setTute] = useState<Chapter | null>(null);
 
   useEffect(() => {
