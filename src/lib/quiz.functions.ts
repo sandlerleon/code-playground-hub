@@ -9,7 +9,7 @@ export type QuizQuestion = {
   explanation: string;
 };
 
-type GenInput = { language: string; chapter: number; chapterTitle: string; chapterObjective: string };
+type GenInput = { language: string; chapter: number; chapterTitle: string; chapterObjective: string; locale?: string };
 type SubmitInput = {
   language: string;
   chapter: number;

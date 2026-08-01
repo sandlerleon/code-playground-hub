@@ -10,12 +10,13 @@ type Props = {
 
 /**
  * Embeds a YouTube search playlist for a chapter/language tutorial.
- * Query targets Eliptum.com-curated tutorial videos.
+ * Query targets Khan Academy tutorial videos.
  */
 export function TuteDialog({ open, onOpenChange, language, chapterTitle }: Props) {
   const query = chapterTitle
-    ? `Eliptum ${language} ${chapterTitle} tutorial`
-    : `Eliptum ${language} full course tutorial`;
+    ? `Khan Academy ${language} ${chapterTitle} tutorial`
+    : `Khan Academy ${language} full course tutorial`;
+
   const embedSrc = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(query)}`;
   const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
 
