@@ -3,6 +3,8 @@ import { useState } from "react";
 import { LANGUAGES } from "@/lib/languages";
 import { Nav } from "@/components/Nav";
 import { TuteDialog } from "@/components/TuteDialog";
+import { CommentsColumn } from "@/components/CommentsColumn";
+import { AdBanner } from "@/components/AdBanner";
 import heroImg from "@/assets/hero.jpg";
 import { ArrowRight, Code2, Sparkles, Users, Youtube } from "lucide-react";
 
