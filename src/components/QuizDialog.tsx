@@ -16,6 +16,7 @@ type Props = {
   chapter: number;
   chapterTitle: string;
   chapterObjective: string;
+  locale?: string;
   onPassed?: () => void;
   onSubmitted?: (percent: number) => void;
 };
@@ -33,6 +34,7 @@ export function QuizDialog({
   chapter,
   chapterTitle,
   chapterObjective,
+  locale,
   onPassed,
   onSubmitted,
 }: Props) {
@@ -83,7 +85,7 @@ export function QuizDialog({
   async function startQuiz() {
     setPhase("loading");
     try {
-      const r = await gen({ data: { language, chapter, chapterTitle, chapterObjective } });
+      const r = await gen({ data: { language, chapter, chapterTitle, chapterObjective, locale } });
       setQuestions(r.questions);
       setPhase("taking");
     } catch (e) {
