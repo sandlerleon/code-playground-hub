@@ -126,6 +126,20 @@ export function CourseSheet({ slug, hello, onOpenChapter, onOpenRooms }: Props) 
               <span className="inline-flex items-center gap-1 ml-2"><Circle className="h-3 w-3 text-amber-400 fill-amber-400" /> viewed</span>{" "}
               <span className="inline-flex items-center gap-1 ml-2"><Check className="h-3 w-3 text-emerald-400" /> completed</span>
             </p>
+            <div className="mt-2 flex items-center gap-2">
+              <Languages className="h-3.5 w-3.5 text-muted-foreground" />
+              <Select value={locale} onValueChange={setLocale}>
+                <SelectTrigger className="h-8 w-[150px] text-xs" title="Course & quiz language">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SPOKEN_LANGUAGES.map((l) => (
+                    <SelectItem key={l.code} value={l.code} className="text-xs">{l.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {translating && <span className="text-[11px] text-muted-foreground">translating…</span>}
+            </div>
             <button
               onClick={() => setTute({ id: "lang", n: 0, title: "", objective: "", starter: "" })}
               className="mt-2 inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300 self-start"
@@ -135,7 +149,10 @@ export function CourseSheet({ slug, hello, onOpenChapter, onOpenRooms }: Props) 
           </SheetHeader>
 
           <ol className="mt-4 space-y-1">
-            {chapters.map((ch) => {
+            {chapters.map((chBase, idx) => {
+              const tr = i18n?.[idx];
+              const ch = tr ? { ...chBase, title: tr.title, objective: tr.objective } : chBase;
+
               const st = progress[ch.id] ?? "none";
               const rowColor =
                 st === "completed"
