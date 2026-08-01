@@ -12,7 +12,7 @@ import {
 const STATIONS = [
   {
     id: "coderadio",
-    label: "CodeRadio (AGITeacher.AI)",
+    label: "CodeRadio (Eliptum.com)",
     url: "https://coderadio-admin-v2.freecodecamp.org/listen/coderadio/radio.mp3",
   },
   {

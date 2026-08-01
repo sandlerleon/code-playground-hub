@@ -1,6 +1,6 @@
 const ALLOWED_ORIGINS = new Set([
-  "https://agiteacher.ai",
-  "https://www.agiteacher.ai",
+  "https://eliptum.com",
+  "https://www.eliptum.com",
 ]);
 
 export function corsHeaders(request: Request): Record<string, string> {

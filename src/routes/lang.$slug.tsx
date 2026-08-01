@@ -28,7 +28,7 @@ export const Route = createFileRoute("/lang/$slug")({
   validateSearch: searchSchema,
   head: ({ params }) => ({
     meta: [
-      { title: `${params.slug} room — AGITeacher.AI` },
+      { title: `${params.slug} room — Eliptum.com` },
       { name: "description", content: `Write and run ${params.slug} code in your browser.` },
     ],
   }),

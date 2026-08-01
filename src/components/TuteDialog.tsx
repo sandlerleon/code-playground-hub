@@ -10,12 +10,12 @@ type Props = {
 
 /**
  * Embeds a YouTube search playlist for a chapter/language tutorial.
- * Query targets AGITeacher.AI-curated tutorial videos.
+ * Query targets Eliptum.com-curated tutorial videos.
  */
 export function TuteDialog({ open, onOpenChange, language, chapterTitle }: Props) {
   const query = chapterTitle
-    ? `AGITeacher ${language} ${chapterTitle} tutorial`
-    : `AGITeacher ${language} full course tutorial`;
+    ? `Eliptum ${language} ${chapterTitle} tutorial`
+    : `Eliptum ${language} full course tutorial`;
   const embedSrc = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(query)}`;
   const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
 

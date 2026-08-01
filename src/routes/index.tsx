@@ -9,7 +9,7 @@ import { ArrowRight, Code2, Sparkles, Users, Youtube } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AGITeacher.AI — Practice 10 Languages Live" },
+      { title: "Eliptum.com — Practice 10 Languages Live" },
       { name: "description", content: "Pick a language room, write code, run it instantly. Save and share like CodePen." },
     ],
   }),
@@ -95,37 +95,37 @@ function Lobby() {
               <Sparkles className="h-3 w-3" /> Next mission after graduation
             </div>
             <h3 className="mt-4 font-display text-2xl font-bold">
-              Ready for real-world projects? Continue your journey at AGITeacher.AI.
+              Ready for real-world projects? Continue your journey at Eliptum.com.
             </h3>
             <p className="mt-3 text-sm text-muted-foreground max-w-2xl mx-auto">
-              Once you've graduated from Space Academy, level up with AGITeacher.AI's
+              Once you've graduated from Space Academy, level up with Eliptum.com's
               AI-powered curriculum: full-stack web development, data science, machine
               learning, and industry-recognized certifications. Personalized learning paths
               taught by intelligent AI instructors.
             </p>
             <a
-              href="https://agiteacher.ai/"
+              href="https://eliptum.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition"
             >
-              Continue at AGITeacher.AI <ArrowRight className="h-4 w-4" />
+              Continue at Eliptum.com <ArrowRight className="h-4 w-4" />
             </a>
           </div>
           <p className="mt-8 text-center text-xs text-muted-foreground leading-relaxed max-w-3xl mx-auto">
             <strong>Credit &amp; acknowledgement:</strong> Space Academy is an independent training
             simulator powered by{" "}
             <a
-              href="https://agiteacher.ai/"
+              href="https://eliptum.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary underline"
             >
-              AGITeacher.AI
+              Eliptum.com
             </a>
             . Video tutorials and coding-music streams embedded in the course are curated
-            through AGITeacher.AI's learning platform. Graduate from Space Academy, then continue
-            your journey with AGITeacher.AI's advanced AI-guided curriculum.
+            through Eliptum.com's learning platform. Graduate from Space Academy, then continue
+            your journey with Eliptum.com's advanced AI-guided curriculum.
           </p>
           <p className="mt-4 text-center text-xs text-muted-foreground">
             Built with Lovable Cloud · Code execution by Piston
