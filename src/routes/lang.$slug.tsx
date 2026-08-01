@@ -11,6 +11,9 @@ import { RoomsPanel } from "@/components/RoomsPanel";
 import { MusicPlayer } from "@/components/MusicPlayer";
 import { TuteDialog } from "@/components/TuteDialog";
 import { InterviewDialog } from "@/components/InterviewDialog";
+import { CommentsColumn } from "@/components/CommentsColumn";
+import { AdBanner } from "@/components/AdBanner";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
