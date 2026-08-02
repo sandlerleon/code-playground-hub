@@ -105,6 +105,7 @@ export const gradeInterviewFn = createServerFn({ method: "POST" })
   .inputValidator(
     (d: {
       language: string;
+      locale?: string;
       questions: InterviewQuestion[];
       answers: { id: string; transcript: string }[];
     }) => d,
@@ -118,7 +119,7 @@ export const gradeInterviewFn = createServerFn({ method: "POST" })
       .join("\n\n---\n\n");
 
     const content = await callAI(
-      GRADE_SYS,
+      GRADE_SYS + localeLine(data.locale),
       `Language: ${data.language}\nGrade this interview. JSON only.\n\n${payload}`,
     );
     const parsed = parseJson<Partial<InterviewGrade>>(content);
