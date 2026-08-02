@@ -25,41 +25,46 @@ type Props = {
 };
 
 /**
- * Loads the Disqus universal embed. Resets window.DISQUS whenever the
- * identifier (route) changes so each language page gets its own thread.
+ * Disqus universal embed. Injects embed.js once, then calls DISQUS.reset()
+ * whenever the identifier (route) changes so each language page gets its
+ * own thread.
  */
 export function DisqusThread({ identifier, title, url }: Props) {
-  const mounted = useRef(false);
+  const host = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const pageUrl =
-      url ?? (typeof window !== "undefined" ? window.location.href : `https://disqus.com/${identifier}`);
+    const pageUrl = url ?? window.location.href;
 
     const config = function (this: DisqusConfigThis) {
       this.page.url = pageUrl;
       this.page.identifier = identifier;
       this.page.title = title;
     };
-
     window.disqus_config = config;
 
-    if (window.DISQUS && mounted.current) {
+    // Disqus renders into the (single) #disqus_thread element in the document.
+    const node = host.current;
+    if (node) node.id = "disqus_thread";
+
+    if (window.DISQUS) {
       window.DISQUS.reset({ reload: true, config });
       return;
     }
 
-    if (!document.getElementById("disqus-embed-script")) {
-      const s = document.createElement("script");
-      s.id = "disqus-embed-script";
-      s.src = `https://${SHORTNAME}.disqus.com/embed.js`;
-      s.setAttribute("data-timestamp", String(Date.now()));
-      s.async = true;
-      document.body.appendChild(s);
-    } else if (window.DISQUS) {
-      window.DISQUS.reset({ reload: true, config });
-    }
-    mounted.current = true;
+    const s = document.createElement("script");
+    s.src = `https://${SHORTNAME}.disqus.com/embed.js`;
+    s.setAttribute("data-timestamp", String(+new Date()));
+    s.async = true;
+    (document.head || document.body).appendChild(s);
   }, [identifier, title, url]);
 
-  return <div id="disqus_thread" className="disqus-dark" />;
+  return (
+    <>
+      <div ref={host} id="disqus_thread" className="disqus-dark" />
+      <noscript>
+        Please enable JavaScript to view the{" "}
+        <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+      </noscript>
+    </>
+  );
 }
