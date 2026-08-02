@@ -68,12 +68,18 @@ function parseJson<T>(s: string): T {
   }
 }
 
+function localeLine(locale?: string) {
+  return locale && locale.trim() && locale !== "English"
+    ? `\nWrite ALL text (prompts, rubrics, feedback, closing remark) in ${locale}. Keep programming keywords and identifiers in English.`
+    : "";
+}
+
 export const generateInterviewFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { language: string }) => d)
+  .inputValidator((d: { language: string; locale?: string }) => d)
   .handler(async ({ data }) => {
     const content = await callAI(
-      GEN_SYS,
+      GEN_SYS + localeLine(data.locale),
       `Language: ${data.language}\nGenerate the final graduation interview now. JSON only.`,
     );
     const parsed = parseJson<{ questions?: unknown }>(content);
@@ -99,6 +105,7 @@ export const gradeInterviewFn = createServerFn({ method: "POST" })
   .inputValidator(
     (d: {
       language: string;
+      locale?: string;
       questions: InterviewQuestion[];
       answers: { id: string; transcript: string }[];
     }) => d,
@@ -112,7 +119,7 @@ export const gradeInterviewFn = createServerFn({ method: "POST" })
       .join("\n\n---\n\n");
 
     const content = await callAI(
-      GRADE_SYS,
+      GRADE_SYS + localeLine(data.locale),
       `Language: ${data.language}\nGrade this interview. JSON only.\n\n${payload}`,
     );
     const parsed = parseJson<Partial<InterviewGrade>>(content);

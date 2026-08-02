@@ -8,6 +8,16 @@ import { toLetterGrade, gradeColor } from "@/lib/grade";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { SPOKEN_LANGUAGES } from "@/components/JennyChat";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const LOCALE_KEY = "course-locale";
 
 type Props = {
   open: boolean;
@@ -46,12 +56,14 @@ export function QuizDialog({
   const [errorMsg, setErrorMsg] = useState("");
   const [priors, setPriors] = useState<PriorAttempt[]>([]);
   const [now, setNow] = useState(() => Date.now());
+  const [quizLocale, setQuizLocale] = useState(locale ?? "English");
   const gen = useServerFn(generateQuizFn);
   const submit = useServerFn(submitQuizFn);
 
   // reset & load history on open
   useEffect(() => {
     if (!open) return;
+    setQuizLocale(locale ?? window.localStorage.getItem(LOCALE_KEY) ?? "English");
     setPhase("intro");
     setAnswers({});
     setResult(null);
@@ -67,7 +79,7 @@ export function QuizDialog({
       .order("created_at", { ascending: false })
       .limit(10)
       .then(({ data }) => setPriors((data ?? []) as PriorAttempt[]));
-  }, [open, user, language, chapter]);
+  }, [open, user, language, chapter, locale]);
 
   // ticking clock for cooldown display
   useEffect(() => {
@@ -85,7 +97,7 @@ export function QuizDialog({
   async function startQuiz() {
     setPhase("loading");
     try {
-      const r = await gen({ data: { language, chapter, chapterTitle, chapterObjective, locale } });
+      const r = await gen({ data: { language, chapter, chapterTitle, chapterObjective, locale: quizLocale } });
       setQuestions(r.questions);
       setPhase("taking");
     } catch (e) {
@@ -134,8 +146,23 @@ export function QuizDialog({
         {phase === "intro" && (
           <div className="space-y-4">
             <div className="rounded-lg border p-4 bg-card/40 text-sm space-y-2">
-              <div className="flex items-center gap-2 font-semibold">
-                <Info className="h-4 w-4 text-primary" /> Exam & retake rules
+              <div className="flex items-center justify-between gap-2 font-semibold">
+                <span className="flex items-center gap-2">
+                  <Info className="h-4 w-4 text-primary" /> Exam & retake rules
+                </span>
+                <Select
+                  value={quizLocale}
+                  onValueChange={(v) => { setQuizLocale(v); window.localStorage.setItem(LOCALE_KEY, v); }}
+                >
+                  <SelectTrigger className="h-8 w-[150px] text-xs font-normal" title="Assessment language">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SPOKEN_LANGUAGES.map((l) => (
+                      <SelectItem key={l.code} value={l.code} className="text-xs">{l.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <ul className="list-disc pl-5 space-y-1 text-muted-foreground text-xs">
                 <li>10 multiple-choice questions, one correct answer per question.</li>
