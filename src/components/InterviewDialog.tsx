@@ -18,6 +18,16 @@ import {
   type InterviewQuestion,
 } from "@/lib/interview.functions";
 import { toLetterGrade, gradeColor } from "@/lib/grade";
+import { SPOKEN_LANGUAGES } from "@/components/JennyChat";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const LOCALE_KEY = "course-locale";
 
 type Props = {
   open: boolean;
@@ -43,6 +53,12 @@ export function InterviewDialog({ open, onOpenChange, language, languageName }: 
   const [speaking, setSpeaking] = useState(false);
   const [result, setResult] = useState<InterviewGrade | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [locale, setLocale] = useState("English");
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(LOCALE_KEY);
+    if (saved) setLocale(saved);
+  }, []);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -90,7 +106,7 @@ export function InterviewDialog({ open, onOpenChange, language, languageName }: 
       const res = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, language: locale }),
       });
       if (!res.ok) throw new Error(await res.text());
       const blob = await res.blob();
@@ -110,13 +126,13 @@ export function InterviewDialog({ open, onOpenChange, language, languageName }: 
       setSpeaking(false);
       console.error("TTS failed", e);
     }
-  }, []);
+  }, [locale]);
 
   async function start() {
     setPhase("loading");
     setErrorMsg("");
     try {
-      const { questions: qs } = await gen({ data: { language } });
+      const { questions: qs } = await gen({ data: { language, locale } });
       setQuestions(qs);
       setIdx(0);
       setAnswers([]);
@@ -182,7 +198,7 @@ export function InterviewDialog({ open, onOpenChange, language, languageName }: 
             setPhase("grading");
             try {
               const g = await grade({
-                data: { language, questions, answers: nextAnswers },
+                data: { language, locale, questions, answers: nextAnswers },
               });
               setResult(g);
               setPhase("result");
@@ -253,6 +269,19 @@ export function InterviewDialog({ open, onOpenChange, language, languageName }: 
               <li>You must score at least <strong>{PASS}%</strong> to graduate.</li>
               <li>Aim for 20-90 seconds per answer.</li>
             </ul>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Interview language</span>
+              <Select value={locale} onValueChange={(v) => { setLocale(v); window.localStorage.setItem(LOCALE_KEY, v); }}>
+                <SelectTrigger className="h-8 w-[160px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SPOKEN_LANGUAGES.map((l) => (
+                    <SelectItem key={l.code} value={l.code} className="text-xs">{l.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-xs">
               🎤 Requires microphone permission and speakers/headphones for Jenny's voice.
             </div>
