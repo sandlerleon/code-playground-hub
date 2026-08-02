@@ -129,6 +129,17 @@ function Lobby() {
             through Eliptum.com's learning platform. Graduate from Space Academy, then continue
             your journey with Eliptum.com's advanced AI-guided curriculum.
           </p>
+          <p className="mt-6 text-center text-sm">
+            You can support us by subscribing to our YouTube channel{" "}
+            <a
+              href="https://www.youtube.com/@isekainakama"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline font-medium"
+            >
+              youtube.com/@isekainakama
+            </a>
+          </p>
           <p className="mt-4 text-center text-xs text-muted-foreground">
             Built with Lovable Cloud · Code execution by Piston
           </p>
