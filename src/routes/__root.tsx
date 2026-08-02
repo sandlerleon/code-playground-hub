@@ -88,6 +88,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head><HeadContent /></head>
       <body>
         {children}
+        <script id="dsq-count-scr" src="https://eliptum.disqus.com/count.js" async />
         <Scripts />
       </body>
     </html>

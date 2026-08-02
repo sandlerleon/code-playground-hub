@@ -8,16 +8,27 @@ type Props = {
   chapterTitle?: string;
 };
 
-/**
- * Embeds a YouTube search playlist for a chapter/language tutorial.
- * Query targets Khan Academy tutorial videos.
- */
-export function TuteDialog({ open, onOpenChange, language, chapterTitle }: Props) {
-  const query = chapterTitle
-    ? `Khan Academy ${language} ${chapterTitle} tutorial`
-    : `Khan Academy ${language} full course tutorial`;
+/** Known-good full-course video IDs (W3Schools / freeCodeCamp style tutorials). */
+const VIDEOS: Record<string, string> = {
+  javascript: "PkZNo7MFNFg",
+  python: "rfscVS0vtbw",
+  typescript: "30LWjhZzg50",
+  java: "A74TOX803D0",
+  cpp: "vLnPwxZdW4Y",
+  csharp: "GhQdlIFylQ8",
+  go: "yyUHQIec83I",
+  rust: "MsocPEZBd-M",
+  php: "OK_JCtrrv-c",
+  ruby: "t_ispmWmdjY",
+};
 
-  const embedSrc = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(query)}`;
+/** Embeds a working YouTube tutorial for a language (optionally scoped to a chapter). */
+export function TuteDialog({ open, onOpenChange, language, chapterTitle }: Props) {
+  const videoId = VIDEOS[language] ?? VIDEOS.javascript;
+  const embedSrc = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`;
+  const query = chapterTitle
+    ? `w3schools ${language} ${chapterTitle} tutorial`
+    : `w3schools ${language} full course tutorial`;
   const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
 
   return (
@@ -41,7 +52,7 @@ export function TuteDialog({ open, onOpenChange, language, chapterTitle }: Props
           />
         </div>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>Search: <span className="font-mono">{query}</span></span>
+          <span>More: <span className="font-mono">{query}</span></span>
           <a
             href={searchUrl}
             target="_blank"
