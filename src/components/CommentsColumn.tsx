@@ -60,7 +60,7 @@ export function CommentsColumn({ identifier, title }: Props) {
           <MessagesSquare className="h-3.5 w-3.5 text-primary" /> Discussion
         </div>
         <div className="p-3">
-          <DisqusThread identifier={identifier} title={title} />
+          <CommentsThread pageKey={identifier} />
         </div>
       </div>
     </aside>

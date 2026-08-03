@@ -10,7 +10,7 @@ import { Trophy, ArrowLeft } from "lucide-react";
 export const Route = createFileRoute("/leaderboard/$slug")({
   head: ({ params }) => ({
     meta: [
-      { title: `${params.slug} leaderboard — Eliptum.com` },
+      { title: `${params.slug} leaderboard — AGITeacher.AI` },
       { name: "description", content: `Top ${params.slug} cadets ranked by certification quiz scores.` },
     ],
   }),

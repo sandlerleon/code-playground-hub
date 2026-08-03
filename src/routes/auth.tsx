@@ -12,7 +12,7 @@ import { Terminal } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — Eliptum.com" }, { name: "description", content: "Sign in or create an account to save and share your code snippets." }] }),
+  head: () => ({ meta: [{ title: "Sign in — AGITeacher.AI" }, { name: "description", content: "Sign in or create an account to save and share your code snippets." }] }),
   component: AuthPage,
 });
 
@@ -63,7 +63,7 @@ function AuthPage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <a href="https://eliptum.com" target="_blank" rel="noopener noreferrer" className="mb-8 flex items-center justify-center gap-2 font-bold text-xl">
-          <Terminal className="h-6 w-6 text-primary" />Eliptum.com
+          <Terminal className="h-6 w-6 text-primary" />AGITeacher.AI
         </a>
         <Card className="p-6">
           <Tabs defaultValue="signin">

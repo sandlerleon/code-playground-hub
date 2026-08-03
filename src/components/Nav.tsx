@@ -11,7 +11,7 @@ export function Nav() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
         <a href="https://eliptum.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 font-bold text-lg">
           <Terminal className="h-5 w-5 text-primary" />
-          <span>Eliptum.com</span>
+          <span>AGITeacher.AI</span>
         </a>
         <nav className="flex items-center gap-2">
           {!loading && user ? (
