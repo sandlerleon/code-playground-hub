@@ -147,6 +147,12 @@ export function RoomView({ room, onBack }: Props) {
       const state = ch.presenceState();
       const ids = Object.keys(state).filter((k) => k !== myPeerId);
       setPeers(Object.keys(state));
+      setOnlineNames(
+        Object.entries(state).map(([key, metas]) => {
+          const m = (metas as unknown as { name?: string }[])[0];
+          return m?.name ?? key.split("-")[0] ?? "cadet";
+        }),
+      );
       // Deterministic initiator: lower id initiates
       if (localStreamRef.current) {
         for (const pid of ids) {
