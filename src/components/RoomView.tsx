@@ -374,6 +374,26 @@ export function RoomView({ room, onBack }: Props) {
         </Button>
       </div>
 
+      <div className="flex flex-wrap items-center gap-1.5 border-b bg-card/40 px-3 py-1.5">
+        <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+          Online ({onlineNames.length})
+        </span>
+        {onlineNames.map((n, i) => (
+          <span
+            key={`${n}-${i}`}
+            className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px]"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            {n}
+          </span>
+        ))}
+        <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px]">
+          <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+          Instructor Jenny
+        </span>
+      </div>
+
+
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-3 py-2">
         {messages.length === 0 && (
           <p className="text-xs text-muted-foreground">
