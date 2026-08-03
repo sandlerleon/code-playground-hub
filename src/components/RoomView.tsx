@@ -46,6 +46,7 @@ export function RoomView({ room, onBack }: Props) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [peers, setPeers] = useState<string[]>([]);
+  const [onlineNames, setOnlineNames] = useState<string[]>([]);
   const [micOn, setMicOn] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [remoteAudio, setRemoteAudio] = useState(0);
