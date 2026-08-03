@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DisqusThread } from "@/components/DisqusThread";
+import { CommentsThread } from "@/components/CommentsThread";
 import { MessagesSquare } from "lucide-react";
 
 const KEY = "comments-col-width";
