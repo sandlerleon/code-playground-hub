@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { toLetterGrade, gradeColor } from "@/lib/grade";
 
 export const Route = createFileRoute("/dashboard")({
-  head: () => ({ meta: [{ title: "My Dashboard — Eliptum.com" }] }),
+  head: () => ({ meta: [{ title: "My Dashboard — AGITeacher.AI" }] }),
   component: Dashboard,
 });
 

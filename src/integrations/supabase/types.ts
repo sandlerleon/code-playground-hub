@@ -44,6 +44,36 @@ export type Database = {
         }
         Relationships: []
       }
+      page_comments: {
+        Row: {
+          author_name: string
+          avatar_url: string | null
+          body: string
+          created_at: string
+          id: string
+          page_key: string
+          user_id: string
+        }
+        Insert: {
+          author_name: string
+          avatar_url?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          page_key: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          avatar_url?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          page_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

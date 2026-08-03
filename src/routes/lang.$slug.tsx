@@ -31,7 +31,7 @@ export const Route = createFileRoute("/lang/$slug")({
   validateSearch: searchSchema,
   head: ({ params }) => ({
     meta: [
-      { title: `${params.slug} room — Eliptum.com` },
+      { title: `${params.slug} room — AGITeacher.AI` },
       { name: "description", content: `Write and run ${params.slug} code in your browser.` },
     ],
   }),
@@ -214,7 +214,7 @@ function Room() {
           </Card>
         </div>
       </div>
-        <CommentsColumn identifier={`lang-${lang.slug}`} title={`${lang.name} room — Eliptum.com`} />
+        <CommentsColumn identifier={`lang-${lang.slug}`} title={`${lang.name} room — AGITeacher.AI`} />
       </div>
 
       <JennyChat

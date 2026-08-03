@@ -46,6 +46,7 @@ export function RoomView({ room, onBack }: Props) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [peers, setPeers] = useState<string[]>([]);
+  const [onlineNames, setOnlineNames] = useState<string[]>([]);
   const [micOn, setMicOn] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [remoteAudio, setRemoteAudio] = useState(0);
@@ -146,6 +147,12 @@ export function RoomView({ room, onBack }: Props) {
       const state = ch.presenceState();
       const ids = Object.keys(state).filter((k) => k !== myPeerId);
       setPeers(Object.keys(state));
+      setOnlineNames(
+        Object.entries(state).map(([key, metas]) => {
+          const m = (metas as unknown as { name?: string }[])[0];
+          return m?.name ?? key.split("-")[0] ?? "cadet";
+        }),
+      );
       // Deterministic initiator: lower id initiates
       if (localStreamRef.current) {
         for (const pid of ids) {
@@ -366,6 +373,26 @@ export function RoomView({ room, onBack }: Props) {
           {voiceOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
         </Button>
       </div>
+
+      <div className="flex flex-wrap items-center gap-1.5 border-b bg-card/40 px-3 py-1.5">
+        <span className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+          Online ({onlineNames.length})
+        </span>
+        {onlineNames.map((n, i) => (
+          <span
+            key={`${n}-${i}`}
+            className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px]"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            {n}
+          </span>
+        ))}
+        <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px]">
+          <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+          Instructor Jenny
+        </span>
+      </div>
+
 
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-3 py-2">
         {messages.length === 0 && (
