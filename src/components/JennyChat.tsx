@@ -248,9 +248,10 @@ export function JennyChat({ storageKey, language, getCode, getLastRun, greeting,
     greetedRef.current = true;
     const preset = SPOKEN_LANGUAGES.find((l) => l.code === spokenLang);
     const text =
-      greeting ??
       (preset?.nativeGreeting ?? "Welcome aboard, cadet! Ready to write some code?") +
-        ` (Coding in ${language} today.)`;
+      " " +
+      (greeting ?? `(Coding in ${language} today.)`);
+
     const msg: UIMessage = {
       id: crypto.randomUUID(),
       role: "assistant",
