@@ -100,8 +100,9 @@ function buildContextMessage(
     .join("\n");
 }
 
-export function JennyChat({ storageKey, language, getCode, getLastRun }: Props) {
-  const [open, setOpen] = useState(false);
+export function JennyChat({ storageKey, language, getCode, getLastRun, greeting, openOnMount }: Props) {
+  const [open, setOpen] = useState(!!openOnMount);
+
   const [input, setInput] = useState("");
   const [initial] = useState<UIMessage[]>(() => loadMessages(storageKey));
   const [voiceOn, setVoiceOn] = useState(true);
