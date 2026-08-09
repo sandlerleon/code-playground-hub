@@ -17,10 +17,12 @@ import { AdBanner } from "@/components/AdBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Play, Save, Loader2, ArrowLeft, Share2, Youtube, GraduationCap } from "lucide-react";
+import { Play, Save, Loader2, ArrowLeft, Share2, Youtube, GraduationCap, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useRoomPresence } from "@/hooks/use-room-presence";
 import { toast } from "sonner";
+
 import { useSearch, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import type { Chapter } from "@/lib/curriculum";
