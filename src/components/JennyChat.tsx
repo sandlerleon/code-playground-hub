@@ -247,19 +247,21 @@ export function JennyChat({ storageKey, language, getCode, getLastRun, greeting,
     }
     greetedRef.current = true;
     const preset = SPOKEN_LANGUAGES.find((l) => l.code === spokenLang);
-    const greeting =
+    const text =
+      greeting ??
       (preset?.nativeGreeting ?? "Welcome aboard, cadet! Ready to write some code?") +
-      ` (Coding in ${language} today.)`;
+        ` (Coding in ${language} today.)`;
     const msg: UIMessage = {
       id: crypto.randomUUID(),
       role: "assistant",
-      parts: [{ type: "text", text: greeting }],
+      parts: [{ type: "text", text }],
     };
     setMessages([msg]);
-    // speak immediately (may be blocked by autoplay policy — user can click volume to retry)
+    // speak immediately (may be blocked by autoplay policy — retried on first interaction)
     if (voiceOn) {
       spokenIdsRef.current.add(msg.id);
-      void speak(toSpeakable(greeting));
+      void speak(toSpeakable(text));
+
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
