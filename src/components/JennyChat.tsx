@@ -194,11 +194,23 @@ export function JennyChat({ storageKey, language, getCode, getLastRun, greeting,
           setSpeaking(false);
           URL.revokeObjectURL(url);
         };
-        await audio.play();
+        try {
+          await audio.play();
+        } catch {
+          // Autoplay blocked — retry on the first user interaction.
+          const retry = () => {
+            document.removeEventListener("pointerdown", retry);
+            document.removeEventListener("keydown", retry);
+            void audio.play().catch(() => setSpeaking(false));
+          };
+          document.addEventListener("pointerdown", retry, { once: true });
+          document.addEventListener("keydown", retry, { once: true });
+        }
       } catch (e) {
         setSpeaking(false);
         console.error("TTS failed", e);
       }
+
     },
     [spokenLang],
   );
