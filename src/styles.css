@@ -62,9 +62,22 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html, body { background-color: var(--color-background); color: var(--color-foreground); font-family: var(--font-display); }
+  html, body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-display);
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  html { height: 100%; }
+  body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+  body > * { flex: 1 1 auto; min-width: 0; width: 100%; }
   body { background-image: radial-gradient(ellipse at top, oklch(0.22 0.05 240 / 0.4), transparent 60%); }
 }
+
 
 @layer utilities {
   .glow-primary { box-shadow: 0 0 40px -10px oklch(0.82 0.18 145 / 0.5); }
