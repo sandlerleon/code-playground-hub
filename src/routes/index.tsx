@@ -65,6 +65,10 @@ function Lobby() {
               className="group relative overflow-hidden rounded-xl border bg-card p-5 transition hover:border-primary/50 hover:glow-primary"
             >
               <div className={`absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br ${lang.accent} opacity-20 blur-2xl transition group-hover:opacity-40`} />
+              <div className="absolute right-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-background/70 px-2 py-0.5 text-[11px] font-mono text-muted-foreground backdrop-blur">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                {presence[lang.slug] ?? 0} online
+              </div>
               <Link to="/lang/$slug" params={{ slug: lang.slug }} className="block">
                 <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${lang.accent} font-mono text-sm font-bold text-black/80`}>
                   {lang.icon}
@@ -72,6 +76,7 @@ function Lobby() {
                 <h3 className="mt-4 text-lg font-semibold">{lang.name}</h3>
                 <p className="mt-1 text-xs text-muted-foreground font-mono">{lang.piston.language} {lang.piston.version}</p>
               </Link>
+
               <div className="mt-4 flex items-center justify-between text-sm">
                 <Link to="/lang/$slug" params={{ slug: lang.slug }} className="text-primary inline-flex items-center">
                   Enter room <ArrowRight className="ml-1 h-4 w-4" />
