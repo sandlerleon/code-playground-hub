@@ -42,7 +42,12 @@ type Props = {
   language: string;
   getCode: () => string;
   getLastRun: () => { stdout: string; stderr: string; code: number | null } | null;
+  /** Override the auto-greeting spoken on first load. */
+  greeting?: string;
+  /** Open the chat dock automatically on mount. */
+  openOnMount?: boolean;
 };
+
 
 function loadMessages(key: string): UIMessage[] {
   if (typeof window === "undefined") return [];
