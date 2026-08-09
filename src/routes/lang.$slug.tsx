@@ -65,6 +65,9 @@ function Room() {
   const [tuteOpen, setTuteOpen] = useState(false);
   const [interviewOpen, setInterviewOpen] = useState(false);
   const runFn = useServerFn(runCodeFn);
+  const presence = useRoomPresence(lang.slug);
+  const online = presence[lang.slug] ?? 1;
+
 
   useEffect(() => {
     if (!snippetId) {
