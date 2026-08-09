@@ -22,7 +22,9 @@ export const Route = createFileRoute("/")({
 
 function Lobby() {
   const [tute, setTute] = useState<string | null>(null);
+  const presence = useRoomPresence(null);
   return (
+
     <div className="min-h-screen">
       <Nav />
       <AdBanner />
