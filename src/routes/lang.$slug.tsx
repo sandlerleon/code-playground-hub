@@ -17,10 +17,12 @@ import { AdBanner } from "@/components/AdBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Play, Save, Loader2, ArrowLeft, Share2, Youtube, GraduationCap } from "lucide-react";
+import { Play, Save, Loader2, ArrowLeft, Share2, Youtube, GraduationCap, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useRoomPresence } from "@/hooks/use-room-presence";
 import { toast } from "sonner";
+
 import { useSearch, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import type { Chapter } from "@/lib/curriculum";
@@ -63,6 +65,9 @@ function Room() {
   const [tuteOpen, setTuteOpen] = useState(false);
   const [interviewOpen, setInterviewOpen] = useState(false);
   const runFn = useServerFn(runCodeFn);
+  const presence = useRoomPresence(lang.slug);
+  const online = presence[lang.slug] ?? 1;
+
 
   useEffect(() => {
     if (!snippetId) {
@@ -147,6 +152,15 @@ function Room() {
             <Input value={title} onChange={e=>setTitle(e.target.value)} className="h-8 max-w-xs border-transparent bg-transparent text-base font-semibold focus-visible:border-input" />
             <div className="text-xs text-muted-foreground font-mono">{lang.name} · {lang.piston.version}</div>
           </div>
+          <div
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-mono text-primary"
+            title="Visitors currently in this room"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            <Users className="h-3 w-3" />
+            {online} online
+          </div>
+
           <Button variant="outline" size="sm" onClick={() => setTuteOpen(true)} title="Video tutorial">
             <Youtube className="h-4 w-4 mr-2 text-red-500" />Tute
           </Button>

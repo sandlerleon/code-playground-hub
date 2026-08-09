@@ -42,7 +42,12 @@ type Props = {
   language: string;
   getCode: () => string;
   getLastRun: () => { stdout: string; stderr: string; code: number | null } | null;
+  /** Override the auto-greeting spoken on first load. */
+  greeting?: string;
+  /** Open the chat dock automatically on mount. */
+  openOnMount?: boolean;
 };
+
 
 function loadMessages(key: string): UIMessage[] {
   if (typeof window === "undefined") return [];
@@ -95,8 +100,9 @@ function buildContextMessage(
     .join("\n");
 }
 
-export function JennyChat({ storageKey, language, getCode, getLastRun }: Props) {
-  const [open, setOpen] = useState(false);
+export function JennyChat({ storageKey, language, getCode, getLastRun, greeting, openOnMount }: Props) {
+  const [open, setOpen] = useState(!!openOnMount);
+
   const [input, setInput] = useState("");
   const [initial] = useState<UIMessage[]>(() => loadMessages(storageKey));
   const [voiceOn, setVoiceOn] = useState(true);
@@ -188,11 +194,23 @@ export function JennyChat({ storageKey, language, getCode, getLastRun }: Props) 
           setSpeaking(false);
           URL.revokeObjectURL(url);
         };
-        await audio.play();
+        try {
+          await audio.play();
+        } catch {
+          // Autoplay blocked — retry on the first user interaction.
+          const retry = () => {
+            document.removeEventListener("pointerdown", retry);
+            document.removeEventListener("keydown", retry);
+            void audio.play().catch(() => setSpeaking(false));
+          };
+          document.addEventListener("pointerdown", retry, { once: true });
+          document.addEventListener("keydown", retry, { once: true });
+        }
       } catch (e) {
         setSpeaking(false);
         console.error("TTS failed", e);
       }
+
     },
     [spokenLang],
   );
@@ -229,19 +247,22 @@ export function JennyChat({ storageKey, language, getCode, getLastRun }: Props) 
     }
     greetedRef.current = true;
     const preset = SPOKEN_LANGUAGES.find((l) => l.code === spokenLang);
-    const greeting =
+    const text =
       (preset?.nativeGreeting ?? "Welcome aboard, cadet! Ready to write some code?") +
-      ` (Coding in ${language} today.)`;
+      " " +
+      (greeting ?? `(Coding in ${language} today.)`);
+
     const msg: UIMessage = {
       id: crypto.randomUUID(),
       role: "assistant",
-      parts: [{ type: "text", text: greeting }],
+      parts: [{ type: "text", text }],
     };
     setMessages([msg]);
-    // speak immediately (may be blocked by autoplay policy — user can click volume to retry)
+    // speak immediately (may be blocked by autoplay policy — retried on first interaction)
     if (voiceOn) {
       spokenIdsRef.current.add(msg.id);
-      void speak(toSpeakable(greeting));
+      void speak(toSpeakable(text));
+
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
