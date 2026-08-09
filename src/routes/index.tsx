@@ -26,19 +26,19 @@ function Lobby() {
       <section className="relative overflow-hidden border-b">
         <img src={heroImg} alt="" width={1536} height={768} className="absolute inset-0 h-full w-full object-cover opacity-25" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
-        <div className="relative mx-auto max-w-7xl px-6 py-20 sm:py-28">
+        <div className="relative mx-auto max-w-7xl px-6 py-10 sm:py-14">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
               <Sparkles className="h-3 w-3" /> 10 languages · live execution · save & share
             </div>
-            <h1 className="mt-6 font-display text-5xl sm:text-6xl font-bold tracking-tight">
+            <h1 className="mt-3 font-display text-4xl sm:text-5xl font-bold tracking-tight">
               Train you to code.<br />
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">In any language with AI Teacher.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-muted-foreground">
+            <p className="mt-3 max-w-xl text-base text-muted-foreground">
               Pick a room, write code in a real editor, hit Run. Each language has its own runtime — no install, no setup.
             </p>
-            <div className="mt-8 flex items-center gap-6 text-sm text-muted-foreground">
+            <div className="mt-4 flex items-center gap-6 text-sm text-muted-foreground">
               <span className="flex items-center gap-2"><Code2 className="h-4 w-4 text-primary" /> Real runtimes via Piston</span>
               <span className="flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> Save & share snippets</span>
             </div>
@@ -46,11 +46,11 @@ function Lobby() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-16">
-        <div className="mb-8 flex items-end justify-between">
+      <section className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mb-4 flex items-end justify-between">
           <div>
-            <h2 className="font-display text-3xl font-bold">Language rooms</h2>
-            <p className="mt-1 text-muted-foreground">Enter a room to start coding</p>
+            <h2 className="font-display text-2xl font-bold">Language rooms</h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">Enter a room to start coding</p>
           </div>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
