@@ -4,8 +4,11 @@ import { LANGUAGES } from "@/lib/languages";
 import { Nav } from "@/components/Nav";
 import { TuteDialog } from "@/components/TuteDialog";
 import { AdBanner } from "@/components/AdBanner";
+import { JennyChat } from "@/components/JennyChat";
+import { useRoomPresence } from "@/hooks/use-room-presence";
 import heroImg from "@/assets/hero.jpg";
 import { ArrowRight, Code2, Sparkles, Users, Youtube } from "lucide-react";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
