@@ -158,6 +158,15 @@ function Lobby() {
       {tute && (
         <TuteDialog open={!!tute} onOpenChange={(o) => { if (!o) setTute(null); }} language={tute} />
       )}
+      <JennyChat
+        storageKey="jenny-chat:lobby"
+        language="the Space Academy lobby"
+        openOnMount
+        greeting="I'm Instructor Jenny, your AI teacher. Below you'll find ten language rooms — pick one, click Enter room, write code in the editor and hit Run. Each room has a 20-chapter course, quizzes, crew chat and a graduation interview with me. Where would you like to start today?"
+        getCode={() => ""}
+        getLastRun={() => null}
+      />
+
     </div>
   );
 }
