@@ -15,6 +15,7 @@ import { CommentsColumn } from "@/components/CommentsColumn";
 import { AdBanner } from "@/components/AdBanner";
 
 import { Button } from "@/components/ui/button";
+import { GithubSaveButton } from "@/components/GithubSaveButton";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Play, Save, Loader2, ArrowLeft, Share2, Youtube, GraduationCap, Users } from "lucide-react";
@@ -177,6 +178,12 @@ function Room() {
           <Button variant="outline" size="sm" onClick={save} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} <span className="ml-2">Save</span>
           </Button>
+          <GithubSaveButton
+            languageSlug={lang.slug}
+            languageName={lang.name}
+            filename={lang.piston.filename}
+            getCode={() => code}
+          />
           <Button variant="outline" size="sm" onClick={share} disabled={!currentId}>
             <Share2 className="h-4 w-4 mr-2" />Share
           </Button>

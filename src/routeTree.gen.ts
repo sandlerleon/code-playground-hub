@@ -17,6 +17,7 @@ import { Route as LangSlugRouteImport } from './routes/lang.$slug'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as OauthGithubReturnRouteImport } from './routes/oauth.github.return'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -58,6 +59,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OauthGithubReturnRoute = OauthGithubReturnRouteImport.update({
+  id: '/oauth/github/return',
+  path: '/oauth/github/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/api/tts': typeof ApiTtsRoute
   '/lang/$slug': typeof LangSlugRoute
   '/leaderboard/$slug': typeof LeaderboardSlugRoute
+  '/oauth/github/return': typeof OauthGithubReturnRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/api/tts': typeof ApiTtsRoute
   '/lang/$slug': typeof LangSlugRoute
   '/leaderboard/$slug': typeof LeaderboardSlugRoute
+  '/oauth/github/return': typeof OauthGithubReturnRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/api/tts': typeof ApiTtsRoute
   '/lang/$slug': typeof LangSlugRoute
   '/leaderboard/$slug': typeof LeaderboardSlugRoute
+  '/oauth/github/return': typeof OauthGithubReturnRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/lang/$slug'
     | '/leaderboard/$slug'
+    | '/oauth/github/return'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/lang/$slug'
     | '/leaderboard/$slug'
+    | '/oauth/github/return'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/api/tts'
     | '/lang/$slug'
     | '/leaderboard/$slug'
+    | '/oauth/github/return'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +144,7 @@ export interface RootRouteChildren {
   ApiTtsRoute: typeof ApiTtsRoute
   LangSlugRoute: typeof LangSlugRoute
   LeaderboardSlugRoute: typeof LeaderboardSlugRoute
+  OauthGithubReturnRoute: typeof OauthGithubReturnRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/oauth/github/return': {
+      id: '/oauth/github/return'
+      path: '/oauth/github/return'
+      fullPath: '/oauth/github/return'
+      preLoaderRoute: typeof OauthGithubReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,17 +224,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTtsRoute: ApiTtsRoute,
   LangSlugRoute: LangSlugRoute,
   LeaderboardSlugRoute: LeaderboardSlugRoute,
+  OauthGithubReturnRoute: OauthGithubReturnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
