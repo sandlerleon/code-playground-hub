@@ -44,6 +44,30 @@ export type Database = {
         }
         Relationships: []
       }
+      github_connections: {
+        Row: {
+          created_at: string
+          github_login: string
+          token_ciphertext: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          github_login: string
+          token_ciphertext: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          github_login?: string
+          token_ciphertext?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       page_comments: {
         Row: {
           author_name: string
